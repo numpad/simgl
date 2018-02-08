@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-std=c++14 -Wall -pedantic -ggdb
-INCLUDES=-I lib/
+INCLUDES=-I lib/linux/
 LFLAGS=
 LIBS=-lGL -lglfw -ldl
 
