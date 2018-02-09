@@ -3,8 +3,8 @@ CFLAGS=-std=c++14 -Wall -pedantic -ggdb
 INCLUDES=-I lib/linux/
 LFLAGS=
 LIBS=-lGL -lglfw -ldl
-
-SRCS=$(shell find . -type f -iname "*.cpp")
+SRC=src
+SRCS=$(shell find ${SRC}/ -type f -iname "*.cpp")
 OBJS=$(SRCS:.cpp=.o)
 MAIN=dm3d
 
@@ -19,5 +19,5 @@ $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	$(RM) *.o $(MAIN)
+	$(RM) ${SRC}/*.o $(MAIN)
 
