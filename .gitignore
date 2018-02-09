@@ -1,0 +1,22 @@
+
+# Compiled Object files
+*.o
+*.obj
+
+# User-specified files
+*.suo
+
+# Visual C++ cache files
+ipch/
+*.VC.db
+
+# Executables
+*.exe
+*.out
+dm3d
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+
+
