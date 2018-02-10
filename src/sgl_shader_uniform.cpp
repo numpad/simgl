@@ -18,6 +18,11 @@ sgl::shader_uniform::shader_uniform(const GLuint program, const GLint location)
 {
 }
 
+sgl::shader_uniform::operator int() const
+{
+	return this->uniform_location;
+}
+
 void sgl::shader_uniform::operator=(const GLfloat & v)
 {
 	this->use_program();

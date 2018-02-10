@@ -18,7 +18,10 @@ class shader_uniform {
 
 public:
 	shader_uniform(const GLuint shader_program, const GLint location);
-
+	
+	/* casts */
+	operator int() const;
+	
 	/* scalar */
 	void operator=(const GLfloat &v);
 

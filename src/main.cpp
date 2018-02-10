@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
 	
 	/* shader */
 	sgl::shader tshader("vert.glsl", "frag.glsl");
-	tshader["color"] = glm::vec3(1.0f, 0.0f, 0.0f);
-
+	tshader["color"] = glm::vec3(0.0f, 1.0f, 0.0f);
+	
 	window.update([=](sgl::window &){
 		glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -63,7 +63,12 @@ int main(int argc, char *argv[]) {
 		glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
+		
 	});
+	
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	
 	return 0;
 }
