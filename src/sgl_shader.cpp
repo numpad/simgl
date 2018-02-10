@@ -93,19 +93,23 @@ GLuint sgl::shader::operator()(void) const
 	return this->program;
 }
 
-GLint sgl::shader::operator[](const char *uniform_name)
+sgl::shader_uniform sgl::shader::operator[](const char *uniform_name)
 {
-	return this->get_uniform(uniform_name);
+	return sgl::shader_uniform(this->program, this->uniform(uniform_name));
 }
 
-GLint sgl::shader::get_uniform(std::string uniform_name)
+sgl::shader_uniform sgl::shader::operator[](GLint location)
 {
-	return this->get_uniform(uniform_name.c_str());
+	return sgl::shader_uniform(this->program, location);
 }
 
-GLint sgl::shader::get_uniform(const char *uniform_name)
+GLint sgl::shader::uniform(std::string uniform_name)
+{
+	return this->uniform(uniform_name.c_str());
+}
+
+GLint sgl::shader::uniform(const char *uniform_name)
 {
 	return glGetUniformLocation(this->program, uniform_name);
 }
-
 

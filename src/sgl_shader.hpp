@@ -9,6 +9,8 @@
 
 #include <GL/gl3w.h>
 
+#include "sgl_shader_uniform.hpp"
+
 namespace sgl {
 
 class shader {
@@ -46,10 +48,13 @@ public:
 	GLuint operator()(void) const;
 	
 	/* return location of uniform */
-	GLint get_uniform(std::string uniform_name);
-	GLint get_uniform(const char *uniform_name);
-	GLint operator[](const char *uniform_name);
-	
+	GLint uniform(std::string uniform_name);
+	GLint uniform(const char *uniform_name);
+
+	/* set uniform */
+	sgl::shader_uniform operator[](const char *uniform_name);
+	sgl::shader_uniform operator[](GLint location);
+
 	/* load shader from source */
 	bool load(std::string fname, sgl::shader::type type);
 	

@@ -108,6 +108,8 @@
     <ClCompile Include="lib\windows\gl3w.c" />
     <ClCompile Include="src\gl3w.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sgl_shader.cpp" />
+    <ClCompile Include="src\sgl_shader_uniform.cpp" />
     <ClCompile Include="src\sgl_window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -411,9 +413,12 @@
     <ClInclude Include="lib\windows\glm\vector_relational.hpp" />
     <ClInclude Include="lib\windows\gl\gl3w.h" />
     <ClInclude Include="lib\windows\gl\glcorearb.h" />
+    <ClInclude Include="src\sgl_shader.hpp" />
+    <ClInclude Include="src\sgl_shader_uniform.hpp" />
     <ClInclude Include="src\sgl_window.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="frag.glsl" />
     <None Include="lib\linux\glm\detail\func_common.inl" />
     <None Include="lib\linux\glm\detail\func_common_simd.inl" />
     <None Include="lib\linux\glm\detail\func_exponential.inl" />
@@ -642,6 +647,7 @@
     <None Include="lib\windows\glm\gtx\vector_angle.inl" />
     <None Include="lib\windows\glm\gtx\vector_query.inl" />
     <None Include="lib\windows\glm\gtx\wrap.inl" />
+    <None Include="vert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
