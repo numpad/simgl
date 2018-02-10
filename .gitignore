@@ -15,6 +15,11 @@ ipch/
 *.out
 dm3d
 
+.vs/simgl/v15/.suo
+.vs/simgl/v15/Browse.VC.db
+.vs/simgl/v15/ipch/AutoPCH/d1a0c09d6ac3dcd/MAIN.ipch
+.vs/simgl/v15/Browse.VC.opendb
+
 # Build results
 [Dd]ebug/
 [Rr]elease/

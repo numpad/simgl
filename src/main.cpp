@@ -13,12 +13,13 @@ int main(int argc, char *argv[]) {
 	
 	sgl::window window(800, 600);
 	window.on_resize([](sgl::window &, int w, int h){ glViewport(0, 0, w, h); });
-	
+
 	/* vertices */
 	GLfloat vertices[] = {
-		-0.9f,  0.9f,  0.0f,
-		 0.9f,  0.9f,  0.0f,
-		 0.0f, -0.9f,  0.0f
+		/* position */			/* color */
+		-0.9f,  0.9f,  0.0f,	1.0f, 0.0f, 0.0f,
+		 0.9f,  0.9f,  0.0f,	0.0f, 1.0f, 0.0f,
+		 0.0f, -0.9f,  0.0f,	0.0f, 0.0f, 1.0f
 	};
 	GLuint indices[] = {
 		0, 1, 2
@@ -36,14 +37,16 @@ int main(int argc, char *argv[]) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 
 	/* matrices */
 	glm::mat4 model(1.0f);
 	glm::mat4 view = glm::lookAt(
+		glm::vec3(5.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 	glm::mat4 projection = glm::perspective(45.0f, 800.0f / 600.0f, 0.1f, 100.0f);
@@ -52,10 +55,18 @@ int main(int argc, char *argv[]) {
 	/* shader */
 	sgl::shader tshader("vert.glsl", "frag.glsl");
 	tshader["color"] = glm::vec3(0.0f, 1.0f, 0.0f);
-	
-	window.update([=](sgl::window &){
+	tshader["MVP"] = MVP;
+
+	glEnable(GL_DEPTH_TEST);
+
+
+	window.update([&](sgl::window &){
+		model = glm::rotate(model, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		MVP = projection * view * model;
+		tshader["MVP"] = MVP;
+		
 		glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glUseProgram(tshader());
 		glBindVertexArray(VAO);

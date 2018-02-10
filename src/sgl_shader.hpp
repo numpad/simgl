@@ -36,14 +36,14 @@ private:
 	char *shaders_src[sgl::shader::MAX_TYPES];
 	GLuint shaders[sgl::shader::MAX_TYPES];
 	GLuint program;
-	
+
 	static std::string load_file(std::string fname);
 	
 public:
 	
 	shader(std::string fname_vert, std::string fname_frag);
 	~shader();
-	
+
 	/* return shader program */
 	GLuint operator()(void) const;
 	

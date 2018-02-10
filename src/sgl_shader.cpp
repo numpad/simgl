@@ -84,7 +84,7 @@ bool sgl::shader::link()
 		glDeleteShader(this->shaders[i]);
 		delete[] this->shaders_src[i];
 	}
-	
+
 	return true;
 }
 

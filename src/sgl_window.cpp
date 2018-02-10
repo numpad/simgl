@@ -29,9 +29,11 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
 	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	
+	/* use primary monitor for fullscreen */
 	GLFWmonitor *monitor = (win_fullscreen ? glfwGetPrimaryMonitor() : NULL);
 	
-	this->glfw_window = glfwCreateWindow(win_width, win_height, win_title.c_str(), monitor, NULL);
+	this->_title = win_title;
+	this->glfw_window = glfwCreateWindow(win_width, win_height, this->_title.c_str(), monitor, NULL);
 	if (!this->glfw_window) {
 		puts("glfw window creation failed");
 		return false;
@@ -39,7 +41,6 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 	
 	glfwMakeContextCurrent(this->glfw_window);
 	glfwSwapInterval(1);
-	
 	
 	/* register callbacks */
 	glfwSetFramebufferSizeCallback(this->glfw_window, this->window_fb_resize_callback);
@@ -76,9 +77,20 @@ sgl::window::~window()
 	glfwTerminate();
 }
 
+std::string sgl::window::get_title()
+{
+	return this->_title;
+}
+
 void sgl::window::set_title(std::string title)
 {
-	glfwSetWindowTitle(this->glfw_window, title.c_str());
+	this->set_title(title.c_str());
+}
+
+void sgl::window::set_title(const char *title)
+{
+	this->_title = std::string(title);
+	glfwSetWindowTitle(this->glfw_window, title);
 }
 
 void sgl::window::close(bool close_window)
@@ -100,8 +112,23 @@ void sgl::window::on_focus(sgl::window::focus_callback focus_callback)
 
 void sgl::window::update(std::function<void (sgl::window &)> update_func)
 {
-	
+	double last_time = glfwGetTime();
+	int nb_frames = 0;
+	char win_title[128];
+
+	const std::string last_title = this->get_title();
+
 	while (!glfwWindowShouldClose(this->glfw_window)) {
+		double curr_time = glfwGetTime();
+		nb_frames++;
+		if (curr_time - last_time >= this->_ms_per_frame_update_interval) {
+			this->_ms_per_frame = (1000.0 * this->_ms_per_frame_update_interval) / double(nb_frames);
+			nb_frames = 0;
+			last_time += this->_ms_per_frame_update_interval;
+			sprintf(win_title, "%s (%gms)", last_title.c_str(), this->_ms_per_frame);
+			this->set_title(win_title);
+		}
+
 		update_func(*this);
 		
 		glfwSwapBuffers(this->glfw_window);

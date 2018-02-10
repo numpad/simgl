@@ -24,6 +24,12 @@ namespace sgl {
 		int _width, _height; /* read-write values */
 		bool _focused;
 		
+		std::string _title;
+
+		/* ms per frame */
+		double _ms_per_frame_update_interval = 1.0;
+		double _ms_per_frame;
+
 		/* callbacks */
 		sgl::window::resize_callback on_framebuffer_resize = nullptr;
 		sgl::window::focus_callback on_focus_changed = nullptr;
@@ -46,7 +52,9 @@ namespace sgl {
 		~window();
 		
 		/* window properties */
+		std::string get_title();
 		void set_title(std::string title);
+		void set_title(const char *title);
 		
 		/* close window */
 		void close(bool close_window = true);
