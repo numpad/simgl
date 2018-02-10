@@ -16,10 +16,10 @@ int main(int argc, char *argv[]) {
 
 	/* vertices */
 	GLfloat vertices[] = {
-		/* position */			/* color */
-		-0.9f,  0.9f,  0.0f,	1.0f, 0.0f, 0.0f,
-		 0.9f,  0.9f,  0.0f,	0.0f, 1.0f, 0.0f,
-		 0.0f, -0.9f,  0.0f,	0.0f, 0.0f, 1.0f
+		/* position */				/* color */
+		-1.41f,  1.41f,  0.00f,		1.0f, 0.0f, 0.0f,
+		 1.41f,  1.41f,  0.00f,		0.0f, 1.0f, 0.0f,
+		 0.00f, -1.00f,  0.00f,		0.0f, 0.0f, 1.0f
 	};
 	GLuint indices[] = {
 		0, 1, 2
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 	/* matrices */
 	glm::mat4 model(1.0f);
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(5.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 5.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
@@ -54,16 +54,16 @@ int main(int argc, char *argv[]) {
 	
 	/* shader */
 	sgl::shader tshader("vert.glsl", "frag.glsl");
+	GLint uMVP = tshader["MVP"];
 	tshader["color"] = glm::vec3(0.0f, 1.0f, 0.0f);
-	tshader["MVP"] = MVP;
+	tshader[uMVP] = MVP;
 
 	glEnable(GL_DEPTH_TEST);
 
-
 	window.update([&](sgl::window &){
-		model = glm::rotate(model, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(3.5f), glm::vec3(-0.2f, 0.95f, 0.75f));
 		MVP = projection * view * model;
-		tshader["MVP"] = MVP;
+		tshader[uMVP] = MVP;
 		
 		glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
