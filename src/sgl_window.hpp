@@ -64,6 +64,8 @@ namespace sgl {
 		void on_focus(sgl::window::focus_callback focus_callback);
 		void update(std::function<void (sgl::window &)> update_func);
 		
+		/* opengl debug */
+		void render_wireframe(bool wf_enabled = true);
 	};
 	
 }

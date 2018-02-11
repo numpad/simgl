@@ -108,6 +108,8 @@
     <ClCompile Include="lib\windows\gl3w.c" />
     <ClCompile Include="src\gl3w.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sgl_model.cpp" />
+    <ClCompile Include="src\sgl_modelloader.cpp" />
     <ClCompile Include="src\sgl_shader.cpp" />
     <ClCompile Include="src\sgl_shader_uniform.cpp" />
     <ClCompile Include="src\sgl_window.cpp" />
@@ -413,6 +415,8 @@
     <ClInclude Include="lib\windows\glm\vector_relational.hpp" />
     <ClInclude Include="lib\windows\gl\gl3w.h" />
     <ClInclude Include="lib\windows\gl\glcorearb.h" />
+    <ClInclude Include="src\sgl_model.hpp" />
+    <ClInclude Include="src\sgl_modelloader.hpp" />
     <ClInclude Include="src\sgl_shader.hpp" />
     <ClInclude Include="src\sgl_shader_uniform.hpp" />
     <ClInclude Include="src\sgl_window.hpp" />
