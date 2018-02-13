@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 	
 	/* matrices */
 	glm::mat4 model(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 view = glm::lookAt(
 		glm::vec3(0.0f, 2.0f, 5.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 	tshader[uMVP] = MVP;
 	
 	/* model */
-	sgl::model cube("assets/donut.obj");
+	sgl::model cube("assets/donut2.obj");
 	sgl::texture donut_tex("assets/donut.png");
 	
 	tshader["teximage"] = 0;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 	glEnable(GL_DEPTH_TEST);
 
 	window.update([&](sgl::window &){
-		model = glm::rotate(model, glm::radians(3.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(3.5f), glm::vec3(0.1f, 1.0f, -0.2f));
 		
 		MVP = projection * view * model;
 		tshader[uMVP] = MVP;
