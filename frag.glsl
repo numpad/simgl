@@ -1,7 +1,9 @@
 #version 330 core
 
 uniform vec3 color;
+uniform sampler2D teximage;
 
+in vec2 texcoord;
 out vec4 Color;
 
 float scalar_gamma_correct(float c) {
@@ -17,6 +19,6 @@ vec3 gamma_correct(vec3 color) {
 }
 
 void main() {
-	Color = vec4(gamma_correct(color), 1.0);
+	Color = vec4(texture(teximage, texcoord).rgb, 1.0);
 }
 
