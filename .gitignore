@@ -1,7 +1,6 @@
 
 # Compiled Object files
 *.o
-*.obj
 
 # User-specified files
 *.suo
