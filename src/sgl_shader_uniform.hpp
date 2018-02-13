@@ -23,6 +23,7 @@ public:
 	operator int() const;
 	
 	/* scalar */
+	void operator=(const GLint &i);
 	void operator=(const GLfloat &v);
 
 	/* vector */

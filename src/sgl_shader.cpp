@@ -93,6 +93,11 @@ GLuint sgl::shader::operator()(void) const
 	return this->program;
 }
 
+sgl::shader::operator GLuint() const
+{
+	return this->program;
+}
+
 sgl::shader_uniform sgl::shader::operator[](const char *uniform_name)
 {
 	return sgl::shader_uniform(this->program, this->uniform(uniform_name));

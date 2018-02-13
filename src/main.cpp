@@ -9,12 +9,12 @@
 #include "sgl_window.hpp"
 #include "sgl_shader.hpp"
 #include "sgl_model.hpp"
+#include "sgl_texture.hpp"
 
 int main(int argc, char *argv[]) {
 	
 	sgl::window window(800, 600);
 	window.on_resize([](sgl::window &, int w, int h){ glViewport(0, 0, w, h); });
-
 	
 	/* matrices */
 	glm::mat4 model(1.0f);
@@ -34,7 +34,10 @@ int main(int argc, char *argv[]) {
 	tshader[uMVP] = MVP;
 	
 	/* model */
-	sgl::model cube("donut.obj");
+	sgl::model cube("assets/donut.obj");
+	sgl::texture donut_tex("assets/donut.png");
+	
+	tshader["teximage"] = 0;
 	
 	glEnable(GL_DEPTH_TEST);
 
@@ -47,7 +50,10 @@ int main(int argc, char *argv[]) {
 		glClearColor(0.5f, 0.2f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		glUseProgram(tshader());
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, donut_tex);
+		
+		glUseProgram(tshader);
 		cube.render();
 		glUseProgram(0);
 		

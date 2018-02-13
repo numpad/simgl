@@ -46,6 +46,7 @@ public:
 
 	/* return shader program */
 	GLuint operator()(void) const;
+	operator GLuint() const;
 	
 	/* return location of uniform */
 	GLint uniform(std::string uniform_name) const;

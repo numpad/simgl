@@ -2,7 +2,7 @@ CC=g++
 CFLAGS=-std=c++14 -Wall -pedantic -ggdb
 INCLUDES=-I lib/linux/
 LFLAGS=
-LIBS=-lGL -lglfw -ldl
+LIBS=-lSOIL -lGL -lglfw -ldl
 SRC=src
 SRCS=$(shell find ${SRC}/ -type f -iname "*.cpp")
 OBJS=$(SRCS:.cpp=.o)
