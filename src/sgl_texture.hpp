@@ -3,7 +3,7 @@
 
 #include <string>
 #include <GL/gl3w.h>
-#include <SOIL/SOIL.h>
+#include <stb_image.h>
 
 namespace sgl {
 

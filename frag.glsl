@@ -19,6 +19,6 @@ vec3 gamma_correct(vec3 color) {
 }
 
 void main() {
-	Color = vec4(texture(teximage, vec2(texcoord.x, 1.0 - texcoord.y)).rgb, 1.0);
+	Color = vec4(texture(teximage, texcoord).rgb, 1.0);
 }
 
