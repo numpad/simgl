@@ -6,10 +6,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <stb_image.h>
+
 #include "sgl_window.hpp"
 #include "sgl_shader.hpp"
 #include "sgl_model.hpp"
 #include "sgl_texture.hpp"
+
 
 int main(int argc, char *argv[]) {
 	
@@ -18,7 +21,6 @@ int main(int argc, char *argv[]) {
 	
 	/* matrices */
 	glm::mat4 model(1.0f);
-	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 view = glm::lookAt(
 		glm::vec3(0.0f, 2.0f, 5.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
@@ -34,8 +36,8 @@ int main(int argc, char *argv[]) {
 	tshader[uMVP] = MVP;
 	
 	/* model */
-	sgl::model cube("assets/donut2.obj");
-	sgl::texture donut_tex("assets/donut.png");
+	sgl::model cube("assets/monkey.obj");
+	sgl::texture donut_tex("assets/monkey.png");
 	
 	tshader["teximage"] = 0;
 	
