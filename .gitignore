@@ -8,6 +8,7 @@
 # Visual C++ cache files
 ipch/
 *.VC.db
+.vs/simgl/v15/Browse.VC.db
 
 # Executables
 *.exe
