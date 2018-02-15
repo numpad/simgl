@@ -13,12 +13,11 @@
 #include "sgl_model.hpp"
 #include "sgl_texture.hpp"
 
-#include <locale>
+//#include <locale>
 
 int main(int argc, char *argv[]) {
-	
-	std::wcout.sync_with_stdio(false);
-	std::wcout.imbue(std::locale("de_DE.utf8"));
+	//std::wcout.sync_with_stdio(false);
+	//std::wcout.imbue(std::locale("de_DE.utf8"));
 	
 	bool rotate_model = true;
 	sgl::window window(800, 600);
@@ -57,7 +56,7 @@ int main(int argc, char *argv[]) {
 	glEnable(GL_DEPTH_TEST);
 	
 	float ts = glfwGetTime();
-	window.update([&](sgl::window &){
+	window.update([&](sgl::window &) {
 		/* recalculate matrices */
 		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, 100.0f);
 		if (rotate_model)
