@@ -1,24 +1,30 @@
 #version 330 core
 
-uniform vec3 color;
 uniform sampler2D teximage;
+uniform sampler2D teximage2;
 
 in vec2 texcoord;
+in vec3 normal;
 out vec4 Color;
 
 float scalar_gamma_correct(float c) {
 	return pow(c, 1.0 / 2.2);
 }
 
-vec3 gamma_correct(vec3 color) {
-	return vec3(
+vec4 gamma_correct(vec4 color) {
+	return vec4(
 		scalar_gamma_correct(color.r),
 		scalar_gamma_correct(color.g),
-		scalar_gamma_correct(color.b)
+		scalar_gamma_correct(color.b),
+		color.a
 	);
 }
 
 void main() {
-	Color = vec4(texture(teximage, texcoord).rgb, 1.0);
+	vec4 pixel = texture(teximage, texcoord);
+	vec4 data = texture(teximage2, texcoord);
+	pixel.a = 1.0;
+	
+	Color = (data.b) * pixel * (normal.z * -1.0 + 0.4);
 }
 

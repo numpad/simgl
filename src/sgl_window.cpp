@@ -15,6 +15,20 @@ void sgl::window::window_focus_changed_callback(GLFWwindow *window, int focused)
 		curr_win->on_focus_changed(*curr_win, focused);
 }
 
+void sgl::window::window_character_input_callback(GLFWwindow *window, unsigned int codepoint)
+{
+	sgl::window *curr_win = (sgl::window *)glfwGetWindowUserPointer(window);
+	if (curr_win->on_character_input != nullptr)
+		curr_win->on_character_input(*curr_win, codepoint);
+}
+
+void sgl::window::window_key_input_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
+{
+	sgl::window *curr_win = (sgl::window *)glfwGetWindowUserPointer(window);
+	if (curr_win->on_key_input != nullptr)
+		curr_win->on_key_input(*curr_win, key, scancode, action, mode);
+}
+
 bool sgl::window::init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major, int gl_minor)
 {
 	/* initialize glfw, check for errors */
@@ -27,7 +41,7 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); /* use core opengl without extensions */
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl_major);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
-	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	
 	/* use primary monitor for fullscreen */
 	GLFWmonitor *monitor = (win_fullscreen ? glfwGetPrimaryMonitor() : NULL);
@@ -108,6 +122,18 @@ void sgl::window::on_focus(sgl::window::focus_callback focus_callback)
 {
 	this->on_focus_changed = focus_callback;
 	glfwSetWindowFocusCallback(this->glfw_window, this->window_focus_changed_callback);
+}
+
+void sgl::window::on_character(sgl::window::character_callback character_callback)
+{
+	this->on_character_input = character_callback;
+	glfwSetCharCallback(this->glfw_window, this->window_character_input_callback);
+}
+
+void sgl::window::on_key(sgl::window::key_callback key_callback)
+{
+	this->on_key_input = key_callback;
+	glfwSetKeyCallback(this->glfw_window, this->window_key_input_callback);
 }
 
 void sgl::window::update(std::function<void (sgl::window &)> update_func)

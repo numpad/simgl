@@ -30,6 +30,13 @@ void sgl::shader_uniform::operator=(const GLint &i)
 	this->restore_previous_program();
 }
 
+void sgl::shader_uniform::operator=(const GLuint &u)
+{
+	this->use_program();
+	glUniform1ui(this->uniform_location, u);
+	this->restore_previous_program();
+}
+
 void sgl::shader_uniform::operator=(const GLfloat &v)
 {
 	this->use_program();

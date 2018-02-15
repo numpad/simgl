@@ -24,6 +24,7 @@ public:
 	
 	/* scalar */
 	void operator=(const GLint &i);
+	void operator=(const GLuint &u);
 	void operator=(const GLfloat &v);
 
 	/* vector */

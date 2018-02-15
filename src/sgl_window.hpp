@@ -16,8 +16,11 @@ namespace sgl {
 	
 	class window {
 	public:
+		/* callbacks */
 		typedef std::function<void (sgl::window &, int, int)> resize_callback;
 		typedef std::function<void (sgl::window &, bool)> focus_callback;
+		typedef std::function<void (sgl::window &, unsigned int)> character_callback;
+		typedef std::function<void (sgl::window &, int, int, int, int)> key_callback;
 		
 	private:
 		GLFWwindow *glfw_window;
@@ -30,14 +33,18 @@ namespace sgl {
 		double _ms_per_frame_update_interval = 1.0;
 		double _ms_per_frame;
 
-		/* callbacks */
+		/* callback functions */
 		sgl::window::resize_callback on_framebuffer_resize = nullptr;
 		sgl::window::focus_callback on_focus_changed = nullptr;
+		sgl::window::character_callback on_character_input = nullptr;
+		sgl::window::key_callback on_key_input = nullptr;
 		
 		bool init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major = SGL_DEFAULT_MINOR, int gl_minor = SGL_DEFAULT_MINOR);
 		
 		static void window_fb_resize_callback(GLFWwindow *window, int w, int h);
 		static void window_focus_changed_callback(GLFWwindow *window, int focused);
+		static void window_character_input_callback(GLFWwindow *window, unsigned int codepoint);
+		static void window_key_input_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		
 	public:
 		/* 
@@ -59,9 +66,12 @@ namespace sgl {
 		/* close window */
 		void close(bool close_window = true);
 		
-		/* callback */
+		/* callbacks */
 		void on_resize(sgl::window::resize_callback resize_callback);
 		void on_focus(sgl::window::focus_callback focus_callback);
+		void on_character(sgl::window::character_callback character_callback);
+		void on_key(sgl::window::key_callback key_callback);
+		
 		void update(std::function<void (sgl::window &)> update_func);
 		
 		/* opengl debug */
