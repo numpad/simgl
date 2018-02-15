@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	glm::mat4 MVP = projection * view * model;
 	
 	/* shader */
-	sgl::shader tshader("vert.glsl", "frag.glsl");
+	sgl::shader tshader("assets/vert.glsl", "assets/frag.glsl");
 	GLint uMVP = tshader["MVP"];
 	tshader[uMVP] = MVP;
 	
