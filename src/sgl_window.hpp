@@ -63,6 +63,8 @@ namespace sgl {
 		void set_title(std::string title);
 		void set_title(const char *title);
 		
+		void set_resizable(bool window_resizable = true);
+
 		/* close window */
 		void close(bool close_window = true);
 		

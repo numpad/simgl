@@ -42,6 +42,9 @@
     <ClCompile Include="src\sgl_texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\sgl_joystick.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\linux\gl\gl3w.h">
@@ -962,6 +965,9 @@
     <ClInclude Include="src\sgl_texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\sgl_joystick.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\linux\glm\detail\func_common.inl">
@@ -1647,6 +1653,12 @@
     </None>
     <None Include="lib\windows\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
+    </None>
+    <None Include="assets\frag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="assets\vert.glsl">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>

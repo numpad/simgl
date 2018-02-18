@@ -11,7 +11,7 @@ out vec3 normal;
 
 void main() {
 	texcoord = UV;
-	normal = (MVP * vec4(Normal, 0.0)).xyz;
+	normal = normalize(MVP * vec4(Normal, 0.0)).xyz;
 	gl_Position = MVP * vec4(Position, 1.0);
 }
 

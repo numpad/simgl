@@ -14,12 +14,12 @@
 #include "sgl_texture.hpp"
 #include "sgl_joystick.hpp"
 
-//#include <locale>
-
+#ifdef _WIN32
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {
+#else
 int main(int argc, char *argv[]) {
-	//std::wcout.sync_with_stdio(false);
-	//std::wcout.imbue(std::locale("de_DE.utf8"));
-	
+#endif
+
 	bool rotate_model = true,
 		 wireframe = false;
 	
@@ -31,16 +31,15 @@ int main(int argc, char *argv[]) {
 		if (key == GLFW_KEY_W && action == GLFW_PRESS) {
 			wireframe = !wireframe;
 			window.render_wireframe(wireframe);
-			std::cout << "wireframe " << wireframe << std::endl;
 		}
 	});
-	
-	//window.on_joystick([](sgl::window &, sgl::joystick joystick) {});
-	
+
 	sgl::joystick controller(0);
 	
 	/* matrices */
 	glm::mat4 model(1.0f);
+	model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+
 	glm::mat4 view = glm::lookAt(
 		glm::vec3(0.0f, 2.0f, 5.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
@@ -55,11 +54,10 @@ int main(int argc, char *argv[]) {
 	tshader[uMVP] = MVP;
 	
 	/* model */
-	sgl::model cube("assets/monkey.obj");
-	sgl::texture donut_tex("assets/monkey.png");
-	sgl::texture donut_tex2("assets/monkey2.png");
+	sgl::model cube("assets/world.obj");
+	sgl::texture donut_tex("assets/world.png");
+	
 	tshader["teximage"] = 0;
-	tshader["teximage2"] = 1;
 	
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -68,11 +66,12 @@ int main(int argc, char *argv[]) {
 	
 	window.update([&](sgl::window &) {
 		/* inputs */
+#ifdef SGL_DEBUG
 		printf("\x1b[2J\x1b[0;0H");
 		for (int i = 0; i < controller.get_axes_count(); ++i) {
 			std::cout << "Axis #" << i << ": " << controller.get_axis(i) << std::endl;
 		}
-		
+#endif
 		
 		/* recalculate matrices */
 		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, 100.0f);
@@ -89,8 +88,6 @@ int main(int argc, char *argv[]) {
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, donut_tex);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, donut_tex2);
 		
 		glUseProgram(tshader);
 		cube.render();
