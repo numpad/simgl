@@ -4,7 +4,8 @@
 #include <stb_image.h>
 #undef STB_IMAGE_IMPLEMENTATION
 
-sgl::texture::texture() : texture_id(0)
+sgl::texture::texture()
+	: texture_id(0)
 {
 	glGenTextures(1, &this->texture_id);
 }
@@ -12,6 +13,11 @@ sgl::texture::texture() : texture_id(0)
 sgl::texture::texture(std::string fname) : texture()
 {
 	this->load(fname);
+}
+
+sgl::texture::texture(const sgl::texture &copy)
+	: texture_id(copy.texture_id)
+{
 }
 
 sgl::texture::~texture()

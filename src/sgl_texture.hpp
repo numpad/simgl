@@ -15,6 +15,7 @@ public:
 	
 	texture();
 	texture(std::string fname);
+	texture(const sgl::texture &copy);
 	~texture();
 	
 	bool load(std::string fname);
