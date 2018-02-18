@@ -161,10 +161,10 @@ void sgl::window::update(std::function<void (sgl::window &)> update_func)
 		glfwPollEvents();
 	}
 	
-}
-
-void sgl::window::render_wireframe(bool wf_enabled)
-{
-	glPolygonMode(GL_FRONT_AND_BACK, (wf_enabled ? GL_LINE : GL_TRIANGLES));
+}
+
+void sgl::window::render_wireframe(bool wf_enabled)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, (wf_enabled ? GL_LINE : GL_FILL));
 }
 
