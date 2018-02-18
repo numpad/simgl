@@ -5,7 +5,7 @@ uniform sampler2D teximage2;
 
 in vec2 texcoord;
 in vec3 normal;
-out vec4 Color;
+out vec4 FragColor;
 
 float scalar_gamma_correct(float c) {
 	return pow(c, 1.0 / 2.2);
@@ -25,6 +25,6 @@ void main() {
 	vec4 data = texture(teximage2, texcoord);
 	pixel.a = 1.0;
 	
-	Color = (data.b) * pixel * (normal.z * -1.0 + 0.4);
+	FragColor = pixel * (normal.z * -1.0 + 0.4);
 }
 
