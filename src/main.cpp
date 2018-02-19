@@ -20,7 +20,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 int main(int argc, char *argv[]) {
 #endif
 
-	bool rotate_model = true,
+	bool rotate_model = false,
 		 wireframe = false;
 	
 	sgl::window window(800, 600);
@@ -54,14 +54,8 @@ int main(int argc, char *argv[]) {
 	tshader[uMVP] = MVP;
 	
 	/* model */
-
 	sgl::model cube("assets/world.obj");
 	sgl::texture donut_tex("assets/world.png");
-	
-	tshader["teximage"] = 0;
-	
-	sgl::model cube("assets/monkey.obj");
-	sgl::texture donut_tex("assets/monkey.png");
 	tshader["teximage"] = 0;
 	tshader["viewport"] = glm::vec2(window.width, window.height);
 
@@ -82,7 +76,7 @@ int main(int argc, char *argv[]) {
 		/* recalculate matrices */
 		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, 100.0f);
 		if (rotate_model)
-			model = glm::rotate(model, glm::radians(controller.get_axis(0) * 4.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(1.0f + controller.get_axis(0) * 4.5f), glm::vec3(0.0f, 1.0f, 0.0f));
 		MVP = projection * view * model;
 		
 		/* update shader uniform mvp */
