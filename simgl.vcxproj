@@ -420,6 +420,7 @@
     <ClInclude Include="lib\windows\glm\vector_relational.hpp" />
     <ClInclude Include="lib\windows\gl\gl3w.h" />
     <ClInclude Include="lib\windows\gl\glcorearb.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\sgl_joystick.hpp" />
     <ClInclude Include="src\sgl_model.hpp" />
     <ClInclude Include="src\sgl_modelloader.hpp" />
@@ -659,6 +660,12 @@
     <None Include="lib\windows\glm\gtx\vector_angle.inl" />
     <None Include="lib\windows\glm\gtx\vector_query.inl" />
     <None Include="lib\windows\glm\gtx\wrap.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="simgl.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
