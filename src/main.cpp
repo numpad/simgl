@@ -57,10 +57,8 @@ int main(int argc, char *argv[]) {
 	/* model */
 	sgl::model cube("assets/monkey.obj");
 	sgl::texture donut_tex("assets/monkey.png");
-	sgl::texture donut_tex2("assets/monkey2.png");
 	tshader["teximage"] = 0;
-	tshader["teximage2"] = 1;
-	
+	tshader["viewport"] = glm::vec2(window.width, window.height);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	
@@ -77,7 +75,7 @@ int main(int argc, char *argv[]) {
 		/* recalculate matrices */
 		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, 100.0f);
 		if (rotate_model)
-			model = glm::rotate(model, glm::radians(1.0f + controller.get_axis(0) * 4.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(controller.get_axis(0) * 4.5f), glm::vec3(0.0f, 1.0f, 0.0f));
 		MVP = projection * view * model;
 		
 		/* update shader uniform mvp */
@@ -89,8 +87,6 @@ int main(int argc, char *argv[]) {
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, donut_tex);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, donut_tex2);
 		
 		glUseProgram(tshader);
 		cube.render();
