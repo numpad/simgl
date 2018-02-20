@@ -73,6 +73,10 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 		return false;
 	}
 	
+	/* initialize dear imgui */
+	ImGui::CreateContext();
+	ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
+	
 	return true;
 }
 
@@ -87,6 +91,8 @@ sgl::window::window(int win_width, int win_height, std::string win_title, bool w
 /* free resources */
 sgl::window::~window()
 {
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
 	/* close window */
 	glfwTerminate();
 }
@@ -143,27 +149,43 @@ void sgl::window::on_key(sgl::window::key_callback key_callback)
 
 void sgl::window::update(std::function<void (sgl::window &)> update_func)
 {
+	/* measure fps */
 	double last_time = glfwGetTime();
 	int nb_frames = 0;
+	/* update window title with fps */
+	const char title_format[] = "%s (%gms)";
 	char win_title[128];
-
 	const std::string last_title = this->get_title();
 
 	while (!glfwWindowShouldClose(this->glfw_window)) {
+		/* calculate average fps over x seconds */
 		double curr_time = glfwGetTime();
 		nb_frames++;
 		if (curr_time - last_time >= this->_ms_per_frame_update_interval) {
 			this->_ms_per_frame = (1000.0 * this->_ms_per_frame_update_interval) / double(nb_frames);
 			nb_frames = 0;
 			last_time += this->_ms_per_frame_update_interval;
-			sprintf(win_title, "%s (%gms)", last_title.c_str(), this->_ms_per_frame);
+			/* update window title */
+			sprintf(win_title, title_format, last_title.c_str(), this->_ms_per_frame);
 			this->set_title(win_title);
 		}
-
+		
+		
+		glfwPollEvents();
+		ImGui_ImplGlfwGL3_NewFrame();
+		
 		update_func(*this);
 		
+		/* render imgui, restore polygon mode afterwards */
+		int polygon_mode;
+		glGetIntegerv(GL_POLYGON_MODE, &polygon_mode);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		ImGui::Render();
+		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+		glPolygonMode(GL_FRONT_AND_BACK, polygon_mode);
+		
 		glfwSwapBuffers(this->glfw_window);
-		glfwPollEvents();
+		//glfwPollEvents();
 	}
 	
 }

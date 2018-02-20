@@ -9,6 +9,9 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl.h>
+
 #define SGL_DEFAULT_MAJOR 3
 #define SGL_DEFAULT_MINOR 3
 
@@ -64,6 +67,9 @@ namespace sgl {
 		void set_title(const char *title);
 		
 		void set_resizable(bool window_resizable = true);
+		
+		/* opengl debug */
+		void render_wireframe(bool wf_enabled = true);
 
 		/* close window */
 		void close(bool close_window = true);
@@ -75,9 +81,6 @@ namespace sgl {
 		void on_key(sgl::window::key_callback key_callback);
 		
 		void update(std::function<void (sgl::window &)> update_func);
-		
-		/* opengl debug */
-		void render_wireframe(bool wf_enabled = true);
 	};
 	
 }

@@ -1,4 +1,7 @@
 
+# other
+imgui.ini
+
 # Compiled Object files
 *.o
 
@@ -21,6 +24,7 @@ ipch/
 *.out
 dm3d
 
+# visual studio
 .vs/simgl/v15/.suo
 .vs/simgl/v15/Browse.VC.db
 .vs/simgl/v15/ipch/AutoPCH/d1a0c09d6ac3dcd/MAIN.ipch
