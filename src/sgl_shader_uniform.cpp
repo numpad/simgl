@@ -23,6 +23,13 @@ sgl::shader_uniform::operator int() const
 	return this->uniform_location;
 }
 
+void sgl::shader_uniform::operator=(const GLboolean &b)
+{
+	this->use_program();
+	glUniform1i(this->uniform_location, b);
+	this->restore_previous_program();
+}
+
 void sgl::shader_uniform::operator=(const GLint &i)
 {
 	this->use_program();
