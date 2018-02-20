@@ -1,5 +1,5 @@
-#ifndef SGL_MODEL_HPP
-#define SGL_MODEL_HPP
+#ifndef SGL_MESH_HPP
+#define SGL_MESH_HPP
 
 #include <string>
 #include <vector>
@@ -10,8 +10,8 @@
 
 namespace sgl {
 
-class model {
-	/* model data */
+class mesh {
+	/* mesh data */
 	std::vector<GLfloat> vertices;
 
 	/* opengl data */
@@ -30,9 +30,9 @@ class model {
 	void restore_vertex_array();
 public:
 	
-	model();
-	model(std::string obj_path);
-	~model();
+	mesh();
+	mesh(std::string obj_path);
+	~mesh();
 	
 	void load(std::string obj_path);
 	
