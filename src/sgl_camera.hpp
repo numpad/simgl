@@ -16,6 +16,7 @@ class camera {
     bool constrain_pitch;
 
     void update_vectors();
+	
 public:
     glm::vec3 pos;
 

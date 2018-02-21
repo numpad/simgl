@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include <GL/gl3w.h>
 
@@ -15,6 +16,30 @@
 #include "sgl_texture.hpp"
 #include "sgl_joystick.hpp"
 #include "sgl_camera.hpp"
+
+struct CameraNode {
+	glm::vec3 pos;
+	float rotation[2];
+	
+	CameraNode(glm::vec3 wp, float y, float p)
+		: pos(wp), rotation{y, p}
+	{
+	}
+	
+};
+
+struct CameraPath {
+	std::vector<CameraNode> nodes;
+	
+	CameraPath()
+	{
+	}
+	
+	void add(CameraNode cn)
+	{
+		this->nodes.push_back(cn);
+	}
+};
 
 #ifdef _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {
@@ -38,6 +63,7 @@ int main(int argc, char *argv[]) {
 	/* shader */
 	sgl::shader tshader("assets/vert.glsl", "assets/frag.glsl");
 	GLint uMVP = tshader["MVP"];
+	tshader["z_far"] = 350.0f;
 	
 	/* model */
 	sgl::mesh world_mesh("assets/world.obj");
@@ -51,6 +77,8 @@ int main(int argc, char *argv[]) {
 	
 	ImGui::StyleColorsLight();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	
+	CameraPath cam_path;
 	
 	window.update([&](sgl::window &) {
 		/* inputs */
@@ -71,6 +99,14 @@ int main(int argc, char *argv[]) {
 		ImGui::Begin("Render Settings");
 			static bool _wireframe_enabled = false;
 			static bool _render_depthbuffer = false;
+			static float _render_distance = 350.0f;
+			
+			if (ImGui::SliderFloat("Render Distance", &_render_distance, 1.0f, 1000.0f)) {
+				tshader["z_far"] = _render_distance;
+			}
+			
+			ImGui::Separator();
+			
 			if (ImGui::Checkbox("Wireframe", &_wireframe_enabled)) {
 				window.render_wireframe(_wireframe_enabled);
 			}
@@ -79,12 +115,44 @@ int main(int argc, char *argv[]) {
 			}
 		ImGui::End();
 		
+		ImGui::Begin("Camera");
+			float rot[] = {camera.get_yaw(), camera.get_pitch()};
+			
+			ImGui::DragFloat3("Position", &camera.pos[0], 0.2f);
+			if (ImGui::DragFloat2("Rotation", rot, 0.5f)) {
+				rot[0] = fmodf(rot[0], 360.0f);
+				rot[1] = fmodf(rot[1], 360.0f);
+				camera.set_rotation(rot[0], rot[1]);
+			}
+			
+			if (ImGui::Button("Add Node")) {
+				cam_path.add(CameraNode(camera.pos, camera.get_yaw(), camera.get_pitch()));
+			}
+			
+			ImGui::Separator();
+			
+			ImGui::Text("Path Nodes:");
+			ImGui::BeginGroup();
+				for (size_t i = 0; i < cam_path.nodes.size(); ++i) {
+					glm::vec3 p = cam_path.nodes.at(i).pos;
+					float *r = cam_path.nodes.at(i).rotation;
+					
+					ImGui::Text("#%d at (%g, %g, %g), (%g, %g)", (int)i, p.x, p.y, p.z, r[0], r[1]);
+					ImGui::SameLine();
+					if (ImGui::SmallButton("X")) {
+						cam_path.nodes.erase(cam_path.nodes.begin() + i);
+					}
+				}
+			ImGui::EndGroup();
+			
+		ImGui::End();
+		
 		/* recalculate matrices */
 		float c_l2 = (controller.get_axis(2) * 0.5 + 0.5) * -1.0f;
 		float c_r2 = (controller.get_axis(5) * 0.5 + 0.5) *  1.0f;
 		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f));
 		camera.rotate(controller.get_axis(3) * 1.25f, controller.get_axis(4) * -1.0f, 1.75f);
-		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, 350.0f);
+		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, _render_distance);
 		MVP = projection * camera.get_view() * model;
 		
 		/* update shader uniform mvp */

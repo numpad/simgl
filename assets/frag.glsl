@@ -4,6 +4,7 @@ uniform vec2 viewport;
 uniform sampler2D teximage;
 uniform mat4 projection;
 uniform int render_depthbuffer;
+uniform float z_far;
 
 in vec2 texcoord;
 in vec3 normal;
@@ -16,7 +17,7 @@ void main() {
 	
 	/* depth */
 	float zNear = 0.1;
-	float zFar = 350.0;
+	float zFar = z_far;
 	float depth = (gl_FragCoord.z * 2.0) - 1.0;
 	float z = (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
 	
