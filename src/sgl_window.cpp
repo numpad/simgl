@@ -29,6 +29,13 @@ void sgl::window::window_key_input_callback(GLFWwindow *window, int key, int sca
 		curr_win->on_key_input(*curr_win, key, scancode, action, mode);
 }
 
+void sgl::window::window_close_callback(GLFWwindow *window)
+{
+	sgl::window *curr_win = (sgl::window *)glfwGetWindowUserPointer(window);
+	if (curr_win->on_closed != nullptr)
+		curr_win->on_closed(*curr_win);
+}
+
 bool sgl::window::init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major, int gl_minor)
 {
 	/* initialize glfw, check for errors */
@@ -147,7 +154,13 @@ void sgl::window::on_key(sgl::window::key_callback key_callback)
 	glfwSetKeyCallback(this->glfw_window, this->window_key_input_callback);
 }
 
-void sgl::window::update(std::function<void (sgl::window &)> update_func)
+void sgl::window::on_close(sgl::window::close_callback close_callback)
+{
+	this->on_closed = close_callback;
+	glfwSetWindowCloseCallback(this->glfw_window, this->window_close_callback);
+}
+
+void sgl::window::on_update(std::function<void (sgl::window &)> update_func)
 {
 	/* measure fps */
 	double last_time = glfwGetTime();
