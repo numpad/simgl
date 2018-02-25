@@ -13,7 +13,7 @@
 #include <imgui/imgui_impl.h>
 
 #define SGL_DEFAULT_MAJOR 3
-#define SGL_DEFAULT_MINOR 3
+#define SGL_DEFAULT_MINOR 2
 
 namespace sgl {
 	
@@ -59,7 +59,7 @@ namespace sgl {
 		double _ms_per_frame;
 
 		/* initializer methods */
-		bool init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major = SGL_DEFAULT_MINOR, int gl_minor = SGL_DEFAULT_MINOR);
+		bool init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major = SGL_DEFAULT_MAJOR, int gl_minor = SGL_DEFAULT_MINOR);
 	
 	public:
 		/* 

@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 	
 	window.on_resize([](sgl::window &, int w, int h){ glViewport(0, 0, w, h); });
 	
-	sgl::joystick controller(0);
+	sgl::joystick controller(1);
 	
 	/* matrices */
 	glm::mat4 model(1.0f);
@@ -191,8 +191,8 @@ int main(int argc, char *argv[]) {
 	tshader["z_far"] = 350.0f;
 	
 	/* model */
-	sgl::mesh world_mesh("assets/world.obj");
-	sgl::texture world_tex("assets/world.png");
+	sgl::mesh world_mesh("assets/monkey.obj");
+	sgl::texture world_tex("assets/monkey.png");
 	tshader["teximage"] = 0;
 	
 	/* opengl */
@@ -312,13 +312,14 @@ int main(int argc, char *argv[]) {
 		/* render code */
 		glClearColor(0.4f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		glUseProgram(tshader);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, world_tex);
+		glUseProgram(tshader);
 		world_mesh.render();
 		glUseProgram(0);
-		
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 	});
 	
 	return 0;

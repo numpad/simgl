@@ -45,10 +45,10 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 	}
 	
 	/* apply default window hints */
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); /* use core opengl without extensions */
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl_major);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); /* use core opengl without extensions */
+	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	
 	/* use primary monitor for fullscreen */
 	GLFWmonitor *monitor = (win_fullscreen ? glfwGetPrimaryMonitor() : NULL);
@@ -184,16 +184,10 @@ void sgl::window::on_update(std::function<void (sgl::window &)> update_func)
 		
 		update_func(*this);
 		
-		/* render imgui, restore polygon mode afterwards */
-		int polygon_mode;
-		glGetIntegerv(GL_POLYGON_MODE, &polygon_mode);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-		glPolygonMode(GL_FRONT_AND_BACK, polygon_mode);
 		
 		glfwSwapBuffers(this->glfw_window);
-		//glfwPollEvents();
 	}
 	
 }
