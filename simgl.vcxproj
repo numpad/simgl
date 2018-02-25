@@ -96,7 +96,7 @@
       <AdditionalIncludeDirectories>lib/windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -108,11 +108,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lib\windows\gl3w.c" />
-    <ClCompile Include="src\gl3w.cpp" />
+    <ClCompile Include="lib\windows\gl3w.cpp" />
+    <ClCompile Include="lib\windows\imgui\imgui.cpp" />
+    <ClCompile Include="lib\windows\imgui\imgui_draw.cpp" />
+    <ClCompile Include="lib\windows\imgui\imgui_impl.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sgl_camera.cpp" />
     <ClCompile Include="src\sgl_joystick.cpp" />
-    <ClCompile Include="src\sgl_model.cpp" />
+    <ClCompile Include="src\sgl_mesh.cpp" />
     <ClCompile Include="src\sgl_modelloader.cpp" />
     <ClCompile Include="src\sgl_shader.cpp" />
     <ClCompile Include="src\sgl_shader_uniform.cpp" />
@@ -420,8 +423,11 @@
     <ClInclude Include="lib\windows\glm\vector_relational.hpp" />
     <ClInclude Include="lib\windows\gl\gl3w.h" />
     <ClInclude Include="lib\windows\gl\glcorearb.h" />
+    <ClInclude Include="lib\windows\imgui\imgui.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\sgl_camera.hpp" />
     <ClInclude Include="src\sgl_joystick.hpp" />
+    <ClInclude Include="src\sgl_mesh.hpp" />
     <ClInclude Include="src\sgl_model.hpp" />
     <ClInclude Include="src\sgl_modelloader.hpp" />
     <ClInclude Include="src\sgl_shader.hpp" />
