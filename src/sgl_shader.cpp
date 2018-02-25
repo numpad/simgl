@@ -9,6 +9,10 @@ sgl::shader::shader(std::string fname_vert, std::string fname_frag)
 	this->link();
 }
 
+sgl::shader::shader()
+{
+}
+
 sgl::shader::~shader()
 {
 	glDeleteProgram(this->program);
@@ -17,6 +21,9 @@ sgl::shader::~shader()
 std::string sgl::shader::load_file(std::string fname)
 {
 	std::ifstream infile(fname);
+	if (!infile.is_open())
+		return "";
+	
 	std::string content{std::istreambuf_iterator<char>(infile), std::istreambuf_iterator<char>()};
 	return content;
 }
@@ -24,6 +31,11 @@ std::string sgl::shader::load_file(std::string fname)
 bool sgl::shader::load(std::string fname, sgl::shader::type type)
 {
 	std::string content = sgl::shader::load_file(fname);
+	
+	/* error loading file */
+	if (content.size() == 0)
+		return false;
+	
 	const char *src = content.c_str();
 	
 	const size_t src_len = strlen(src);
@@ -86,11 +98,6 @@ bool sgl::shader::link()
 	}
 
 	return true;
-}
-
-GLuint sgl::shader::operator()(void) const
-{
-	return this->program;
 }
 
 sgl::shader::operator GLuint() const
