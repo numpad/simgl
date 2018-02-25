@@ -42,6 +42,10 @@ void sgl::camera::move(glm::vec3 dir, float speed) {
                  + (glm::normalize(this->world_up) * dir.y) * speed;
 }
 
+void sgl::camera::move_worldspace(glm::vec3 dir, float speed) {
+	this->pos += dir * speed;
+}
+
 void sgl::camera::rotate(float yaw, float pitch, float sensitivity) {
     this->yaw += yaw * sensitivity;
     this->pitch += pitch * sensitivity;

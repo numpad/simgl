@@ -28,7 +28,8 @@ public:
     void set_pos(glm::vec3 pos);
 
     void move(glm::vec3 dir, float speed = 1.0f);
-
+	void move_worldspace(glm::vec3 dir, float speed = 1.0f);
+	
     void rotate(float yaw, float pitch, float sensitivity = 1.0f);
     void set_rotation(float yaw, float pitch);
 
