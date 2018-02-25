@@ -165,13 +165,14 @@ void render_window(sgl::window &window, sgl::shader &tshader, float *render_dist
 	ImGui::End();
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_DEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {
 #else
 int main(int argc, char *argv[]) {
 #endif
 	
 	sgl::window window(800, 600);
+	
 	window.on_resize([](sgl::window &, int w, int h){ glViewport(0, 0, w, h); });
 	
 	sgl::joystick controller(0);

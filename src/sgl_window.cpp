@@ -120,11 +120,6 @@ void sgl::window::set_title(const char *title)
 	glfwSetWindowTitle(this->glfw_window, title);
 }
 
-void sgl::window::set_resizable(bool window_resizable)
-{
-	glfwWindowHint(GLFW_RESIZABLE, (window_resizable ? GL_TRUE : GL_FALSE));
-}
-
 void sgl::window::close(bool close_window)
 {
 	glfwSetWindowShouldClose(this->glfw_window, (close_window ? GLFW_TRUE : GLFW_FALSE));

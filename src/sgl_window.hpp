@@ -94,19 +94,6 @@ namespace sgl {
 		/** @copydoc sgl::window::set_title(std::string title) */
 		void set_title(const char *title);
 		
-		/**
-		 * @brief Requests the window to be (not) resizable.
-		 * 
-		 * 
-		 * @warning This function @em kindly @em requests the window manager
-		 *          to disable resizing. Some platforms may ignore this and
-		 *          still allow changing the window size.
-		 * 
-		 * @param window_allow_resize Set to true to enable resizing.
-		 * @see sgl::window#on_resize()
-		 */
-		void set_resizable(bool window_allow_resize = true);
-		
 		/* opengl debug */
 		void render_wireframe(bool wf_enabled = true);
 
