@@ -13,7 +13,7 @@
 #include <imgui/imgui_impl.h>
 
 #define SGL_DEFAULT_MAJOR 3
-#define SGL_DEFAULT_MINOR 3
+#define SGL_DEFAULT_MINOR 2
 
 namespace sgl {
 	
@@ -59,7 +59,7 @@ namespace sgl {
 		double _ms_per_frame;
 
 		/* initializer methods */
-		bool init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major = SGL_DEFAULT_MINOR, int gl_minor = SGL_DEFAULT_MINOR);
+		bool init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major = SGL_DEFAULT_MAJOR, int gl_minor = SGL_DEFAULT_MINOR);
 	
 	public:
 		/* 
@@ -93,19 +93,6 @@ namespace sgl {
 		void set_title(std::string title);
 		/** @copydoc sgl::window::set_title(std::string title) */
 		void set_title(const char *title);
-		
-		/**
-		 * @brief Requests the window to be (not) resizable.
-		 * 
-		 * 
-		 * @warning This function @em kindly @em requests the window manager
-		 *          to disable resizing. Some platforms may ignore this and
-		 *          still allow changing the window size.
-		 * 
-		 * @param window_allow_resize Set to true to enable resizing.
-		 * @see sgl::window#on_resize()
-		 */
-		void set_resizable(bool window_allow_resize = true);
 		
 		/* opengl debug */
 		void render_wireframe(bool wf_enabled = true);
