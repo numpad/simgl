@@ -11,6 +11,7 @@
 #include <imgui/imgui.h>
 
 #include "sgl_window.hpp"
+#include "sgl_window_context.hpp"
 #include "sgl_shader.hpp"
 #include "sgl_mesh.hpp"
 #include "sgl_texture.hpp"
@@ -88,42 +89,34 @@ struct CameraPath {
 	
 	void follow(sgl::camera &camera, float speed)
 	{
-		ImGui::Begin("Path");
-			ImGui::Text("Path Index: #%zd", node_index);
-			if (this->node_index > 0 && this->node_index < this->nodes.size()) {
-				glm::vec3 target = this->nodes.at(this->node_index).pos;
-				float target_yaw   = this->nodes.at(this->node_index).rotation[0],
-				      target_pitch = this->nodes.at(this->node_index).rotation[1];
-				float last_yaw     = this->nodes.at(this->node_index - 1).rotation[0],
-				      last_pitch   = this->nodes.at(this->node_index - 1).rotation[1];
-				
-				glm::vec3 target_dir = glm::normalize(target - camera.pos);
-				camera.move_worldspace(target_dir, speed);
-				
-				const float dist_to_target = glm::distance(camera.pos, target),
-					        dist_to_last   = glm::distance(camera.pos, this->nodes.at(this->node_index - 1).pos);
-				float completed = dist_to_last / (dist_to_last + dist_to_target);
-				
-				camera.set_rotation(
-					last_yaw + (target_yaw - last_yaw) * completed,
-					last_pitch + (target_pitch - last_pitch) * completed
-				);
-				
-				ImGui::Text("Distance to Target: %.2f", glm::distance(camera.pos, target));
-				ImGui::Text("Target Dir: %.2f, %.2f, %.2f", target_dir.x, target_dir.y, target_dir.z);
-				ImGui::Text("Speed: %.2f", glm::length(target_dir));
-				ImGui::Text("Local completed path: %.2f%%", completed);
-				
-				if (glm::distance(camera.pos, target) < speed)
-					speed = glm::distance(camera.pos, target);
-				
-				if (glm::distance(camera.pos, target) <= speed) {
-					node_index++;
-					if (node_index >= this->nodes.size())
-						node_index = -1;
-				}
+		if (this->node_index > 0 && this->node_index < this->nodes.size()) {
+			glm::vec3 target = this->nodes.at(this->node_index).pos;
+			float target_yaw   = this->nodes.at(this->node_index).rotation[0],
+				  target_pitch = this->nodes.at(this->node_index).rotation[1];
+			float last_yaw     = this->nodes.at(this->node_index - 1).rotation[0],
+				  last_pitch   = this->nodes.at(this->node_index - 1).rotation[1];
+			
+			glm::vec3 target_dir = glm::normalize(target - camera.pos);
+			camera.move_worldspace(target_dir, speed);
+			
+			const float dist_to_target = glm::distance(camera.pos, target),
+						dist_to_last   = glm::distance(camera.pos, this->nodes.at(this->node_index - 1).pos);
+			float completed = dist_to_last / (dist_to_last + dist_to_target);
+			
+			camera.set_rotation(
+				last_yaw + (target_yaw - last_yaw) * completed,
+				last_pitch + (target_pitch - last_pitch) * completed
+			);
+			
+			if (glm::distance(camera.pos, target) < speed)
+				speed = glm::distance(camera.pos, target);
+			
+			if (glm::distance(camera.pos, target) <= speed) {
+				node_index++;
+				if (node_index >= this->nodes.size())
+					node_index = -1;
 			}
-		ImGui::End();
+		}
 	}
 };
 
@@ -144,14 +137,14 @@ void controller_window(sgl::joystick &controller)
 	ImGui::End();
 }
 
-void render_window(sgl::window &window, sgl::shader &tshader, float *render_dist)
+void render_window(sgl::window &window, sgl::shader &world_shader, float *render_dist)
 {
 	ImGui::Begin("Render Settings");
 		static bool _wireframe_enabled = false;
 		static bool _render_depthbuffer = false;
 		
 		if (ImGui::SliderFloat("Render Distance", render_dist, 1.0f, 1000.0f)) {
-			tshader["z_far"] = *render_dist;
+			world_shader["z_far"] = *render_dist;
 		}
 		
 		ImGui::Separator();
@@ -160,7 +153,7 @@ void render_window(sgl::window &window, sgl::shader &tshader, float *render_dist
 			window.render_wireframe(_wireframe_enabled);
 		}
 		if (ImGui::Checkbox("Depthbuffer", &_render_depthbuffer)) {
-			tshader["render_depthbuffer"] = _render_depthbuffer;
+			world_shader["render_depthbuffer"] = _render_depthbuffer;
 		}
 	ImGui::End();
 }
@@ -170,30 +163,47 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 #else
 int main(int argc, char *argv[]) {
 #endif
-	
-	sgl::window window(800, 600);
-	
+	sgl::window_context wctx;
+	wctx.resizable = false;
+	wctx.fullscreen = true;
+	sgl::window window(wctx);
+
 	window.on_resize([](sgl::window &, int w, int h){ glViewport(0, 0, w, h); });
 	
-	sgl::joystick controller(1);
+	sgl::joystick controller(0);
 	
 	/* matrices */
 	glm::mat4 model(1.0f);
-	model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+	model = glm::scale(model, glm::vec3(50.0f, 30.0f, 50.0f));
 
 	sgl::camera camera(glm::vec3(0.0f, 1.5f, 0.0f));
 	glm::mat4 projection;
 	glm::mat4 MVP;
 	
 	/* shader */
-	sgl::shader tshader("assets/vert.glsl", "assets/frag.glsl");
-	GLint uMVP = tshader["MVP"];
-	tshader["z_far"] = 350.0f;
+	sgl::shader world_shader("assets/vert.glsl", "assets/frag.glsl");
+	GLint uMVP = world_shader["MVP"];
+	world_shader["z_far"] = 750.0f;
 	
 	/* model */
-	sgl::mesh world_mesh("assets/monkey.obj");
-	sgl::texture world_tex("assets/monkey.png");
-	tshader["teximage"] = 0;
+	sgl::mesh world_mesh("assets/island.obj");
+	sgl::texture world_tex("assets/island.png");
+	world_shader["teximage"] = 0;
+
+	/* skybox */
+	sgl::mesh skybox_mesh("assets/cube.obj");
+	sgl::shader skybox_shader("assets/skybox_vert.glsl", "assets/skybox_frag.glsl");
+	sgl::texture skybox(GL_TEXTURE_CUBE_MAP);
+	glm::mat4 skybox_model(1.0f);
+	
+	skybox.load_cubemap({
+		"assets/posx.png",
+		"assets/negx.png",
+		"assets/posy.png",
+		"assets/negy.png",
+		"assets/posz.png",
+		"assets/negz.png",
+	});
 	
 	/* opengl */
 	glEnable(GL_DEPTH_TEST);
@@ -207,9 +217,9 @@ int main(int argc, char *argv[]) {
 	
 	window.on_update([&](sgl::window &) {
 		/* inputs */
-		static float render_distance = 350.0f;
+		static float render_distance = 750.0f;
 		controller_window(controller);
-		render_window(window, tshader, &render_distance);
+		render_window(window, world_shader, &render_distance);
 		
 		ImGui::Begin("Camera");
 			float rot[] = {camera.get_yaw(), camera.get_pitch()};
@@ -304,21 +314,36 @@ int main(int argc, char *argv[]) {
 		MVP = projection * camera.get_view() * model;
 		
 		/* update shader uniform mvp */
-		tshader["viewport"] = glm::vec2(window.width, window.height);
-		tshader["projection"] = projection;
-		tshader["model"] = model;
-		tshader[uMVP] = MVP;
+		world_shader["viewport"] = glm::vec2(window.width, window.height);
+		world_shader["projection"] = projection;
+		world_shader["model"] = model;
+		world_shader[uMVP] = MVP;
+
+		skybox_model = glm::rotate(skybox_model, glm::radians(0.01f), glm::vec3(0.1f, 1.0f, 0.4));
+		skybox_shader["mProjection"] = projection;
+		skybox_shader["mView"] = glm::mat4(glm::mat3(camera.get_view()));
+		skybox_shader["mModel"] = skybox_model;
+		skybox_shader["Time"] = (float)glfwGetTime();
 		
 		/* render code */
 		glClearColor(0.4f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+		/* skybox */
+		glDepthMask(GL_FALSE);
+		skybox.bind(0);
+		glUseProgram(skybox_shader);
+		skybox_mesh.render();
+		glUseProgram(0);
+		skybox.unbind();
+		glDepthMask(GL_TRUE);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, world_tex);
-		glUseProgram(tshader);
+		/* world */
+		world_tex.bind(0);
+		glUseProgram(world_shader);
 		world_mesh.render();
 		glUseProgram(0);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		world_tex.unbind();
 
 	});
 	
