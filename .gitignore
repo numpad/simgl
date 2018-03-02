@@ -30,6 +30,8 @@ dm3d
 .vs/simgl/v15/ipch/AutoPCH/d1a0c09d6ac3dcd/MAIN.ipch
 .vs/simgl/v15/Browse.VC.opendb
 
+docs/*
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
