@@ -36,32 +36,52 @@ void sgl::window::window_close_callback(GLFWwindow *window)
 		curr_win->on_closed(*curr_win);
 }
 
-bool sgl::window::init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major, int gl_minor)
+bool sgl::window::init_context(sgl::window_context &wctx)
 {
 	/* initialize glfw, check for errors */
 	if (!glfwInit()) {
-		puts("glfw init failed");
 		return false;
 	}
 	
 	/* apply default window hints */
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl_major);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, wctx.gl_major);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, wctx.gl_minor);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); /* use core opengl without extensions */
-	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, wctx.resizable);
+	glfwWindowHint(GLFW_VISIBLE, wctx.visible);
+	glfwWindowHint(GLFW_DECORATED, wctx.decorated);
+	glfwWindowHint(GLFW_FOCUSED, wctx.focused);
+	glfwWindowHint(GLFW_DOUBLEBUFFER, wctx.double_buffer);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, wctx.forward_compat);
+
 	
 	/* use primary monitor for fullscreen */
-	GLFWmonitor *monitor = (win_fullscreen ? glfwGetPrimaryMonitor() : NULL);
+	GLFWmonitor *monitor = (wctx.fullscreen ? glfwGetPrimaryMonitor() : NULL);
 	
-	this->_title = win_title;
-	this->glfw_window = glfwCreateWindow(win_width, win_height, this->_title.c_str(), monitor, NULL);
+	int set_width = sgl::window_context::DEFAULT_WIDTH;
+	int set_height = sgl::window_context::DEFAULT_HEIGHT;
+	
+	if (wctx.fullscreen && monitor) {
+		const GLFWvidmode *vidmode = glfwGetVideoMode(monitor);
+		set_width = vidmode->width;
+		set_height = vidmode->height;
+	}
+
+	if (wctx.width == GLFW_DONT_CARE)
+		wctx.width = set_width;
+
+	if (wctx.height == GLFW_DONT_CARE)
+		wctx.height = set_height;
+	
+	this->_title = wctx.title;
+	this->glfw_window = glfwCreateWindow(wctx.width, wctx.height, wctx.title.c_str(), monitor, NULL);
 	if (!this->glfw_window) {
-		puts("glfw window creation failed");
 		return false;
 	}
+	glfwGetWindowSize(this->glfw_window, &this->_width, &this->_height);
 	
 	glfwMakeContextCurrent(this->glfw_window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(wctx.swap_interval);
 	
 	/* register callbacks */
 	glfwSetFramebufferSizeCallback(this->glfw_window, this->window_fb_resize_callback);
@@ -69,14 +89,14 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 	/* set userpointer to glfw window */
 	glfwSetWindowUserPointer(this->glfw_window, (void *)this);
 	
+	glfwSetWindowSizeLimits(this->glfw_window, wctx.min_width, wctx.min_height, wctx.max_width, wctx.max_height);
+
 	/* init gl3w */
 	if (gl3wInit()) {
-		puts("gl3w init failed!");
 		return false;
 	}
 	
-	if (!gl3wIsSupported(gl_major, gl_minor)) {
-		printf("gl version %d.%d not supported!\n", gl_major, gl_minor);
+	if (!gl3wIsSupported(wctx.gl_major, wctx.gl_minor)) {
 		return false;
 	}
 	
@@ -87,12 +107,13 @@ bool sgl::window::init_glfw_window(int win_width, int win_height, std::string wi
 	return true;
 }
 
-sgl::window::window(int win_width, int win_height, std::string win_title, bool win_fullscreen)
-	: _width(win_width), _height(win_height),
-	  width(_width), height(_height),
-	  focused(_focused)
+
+sgl::window::window(sgl::window_context wctx)
+	: _width(wctx.width), _height(wctx.height),
+	width(_width), height(_height),
+	focused(_focused)
 {
-	this->init_glfw_window(win_width, win_height, win_title, win_fullscreen);
+	this->init_context(wctx);
 }
 
 /* free resources */
@@ -118,6 +139,13 @@ void sgl::window::set_title(const char *title)
 {
 	this->_title = std::string(title);
 	glfwSetWindowTitle(this->glfw_window, title);
+}
+
+void sgl::window::set_size(int width, int height)
+{
+	this->_width = width;
+	this->_height = height;
+	glfwSetWindowSize(this->glfw_window, width, height);
 }
 
 void sgl::window::close(bool close_window)

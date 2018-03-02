@@ -12,8 +12,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl.h>
 
-#define SGL_DEFAULT_MAJOR 3
-#define SGL_DEFAULT_MINOR 2
+#include "sgl_window_context.hpp"
 
 namespace sgl {
 	
@@ -59,8 +58,8 @@ namespace sgl {
 		double _ms_per_frame;
 
 		/* initializer methods */
-		bool init_glfw_window(int win_width, int win_height, std::string win_title, bool win_fullscreen, int gl_major = SGL_DEFAULT_MAJOR, int gl_minor = SGL_DEFAULT_MINOR);
-	
+		bool init_context(sgl::window_context &wctx);
+
 	public:
 		/* 
 		 * 'read-only' references to _width, _height,
@@ -70,7 +69,7 @@ namespace sgl {
 		const int &width, &height;
 		const bool &focused;
 		
-		window(int win_width, int win_height, std::string win_title = "sgl::window application", bool win_fullscreen = false);
+		window(sgl::window_context wctx = sgl::window_context());
 		~window();
 		
 		/* window properties */
@@ -94,9 +93,23 @@ namespace sgl {
 		/** @copydoc sgl::window::set_title(std::string title) */
 		void set_title(const char *title);
 		
-		/* opengl debug */
-		void render_wireframe(bool wf_enabled = true);
+		/**
+		 * @brief Set the window size.
+		 * 
+		 * @param width Width of the window in pixels.
+		 * @param height Height of the window in pixels.
+		 * @see sgl::window::width
+		 * @see sgl::window::height
+		 */
+		void set_size(int width, int height);
 
+		/**
+		 * @brief Enable/Disable wireframe.
+		 *
+		 * @param wf_enabled Enable/Disable wireframe rendering.
+		 */
+		void render_wireframe(bool wf_enabled = true);
+		
 		/**
 		 * @brief Request closing the window.
 		 *
@@ -123,7 +136,7 @@ namespace sgl {
 		 *     #include <sgl_window.hpp>
 		 *     
 		 *     // Create a window and register a resize callback
-		 *     sgl::window window(800, 600);
+		 *     sgl::window window;
 		 *     window.on_resize([](sgl::window &, int new_width, int new_height) {
 		 *         glViewport(0, 0, new_width, new_height);
 		 *     });
@@ -142,7 +155,7 @@ namespace sgl {
 		 *     #include <sgl_window.hpp>
 		 *
 		 *     // Create a window and register a focus change callback
-		 *     sgl::window window(800, 600);
+		 *     sgl::window window;
 		 *     window.on_focus([&game_engine](sgl::window &, bool focus_gained) {
 		 *         // Pause the game when losing focus
 		 *         if (!focus_gained)
@@ -170,7 +183,7 @@ namespace sgl {
 		 *     bool tried_to_close = false;
 		 *     
 		 *     // Create a window and register a sgl::window::on_close() callback
-		 *     sgl::window window(800, 600);
+		 *     sgl::window window;
 		 *     window.on_close([&](sgl::window &) {
 		 *         // First time trying to close...
 		 *         if (!tried_to_close) {
@@ -198,7 +211,7 @@ namespace sgl {
 		 *     float color[] = {1.0f, 0.0f, 0.0f};
 		 *
 		 *     // Create a window and fill it with a color.
-		 *     sgl::window window(800, 600);
+		 *     sgl::window window;
 		 *     window.on_update([&](sgl::window &) {
 		 *	       glClearColor(color[0], color[1], color[2], 1.0f);
 		 *         glClear(GL_COLOR_BUFFER_BIT);
