@@ -1,12 +1,14 @@
 #include "sgl_mesh.hpp"
 
-sgl::mesh::mesh()
+sgl::mesh::mesh(std::vector<GLuint> layout)
 {
 	glGenVertexArrays(1, &this->vertex_array);
 	glGenBuffers(1, &this->vertex_buffer);
+
+	this->vertex_layout = layout;
 }
 
-sgl::mesh::mesh(std::string obj_path) : mesh()
+sgl::mesh::mesh(std::string obj_path, std::vector<GLuint> layout) : mesh(layout)
 {
 	this->load(obj_path);
 }
@@ -16,6 +18,11 @@ sgl::mesh::~mesh()
 {
 	glDeleteVertexArrays(1, &this->vertex_array);
 	glDeleteBuffers(1, &this->vertex_buffer);
+}
+
+GLuint sgl::mesh::get_vertex_array()
+{
+	return this->vertex_array;
 }
 
 void sgl::mesh::init_vertex_data()
@@ -68,7 +75,18 @@ void sgl::mesh::load(std::string obj_path)
 	this->vertices = loaded.pack({sgl::modelloader::PACK_VERTEX, sgl::modelloader::PACK_NORMAL, sgl::modelloader::PACK_UV});;
 	
 	this->init_vertex_data();
-	this->add_vertex_attribs({3, 3, 2}); /* vec3 vertex, vec3 normal, vec2 texcoord */
+	this->add_vertex_attribs(this->vertex_layout);
+}
+	
+void sgl::mesh::add_vertex(std::vector<GLfloat> data)
+{
+	this->vertices.insert(this->vertices.end(), data.begin(), data.end());
+}
+
+void sgl::mesh::load()
+{
+	this->init_vertex_data();
+	this->add_vertex_attribs(this->vertex_layout);
 }
 
 void sgl::mesh::render()
@@ -77,6 +95,17 @@ void sgl::mesh::render()
 	this->use_vertex_array();
 	
 	glDrawArrays(GL_TRIANGLES, 0, this->vertices.size());
+	
+	/* restore previous vao */
+	this->restore_vertex_array();
+}
+
+void sgl::mesh::render_instanced(GLuint count)
+{
+	/* store current vertex array object */
+	this->use_vertex_array();
+	
+	glDrawArraysInstanced(GL_TRIANGLES, 0, this->vertices.size(), count);
 	
 	/* restore previous vao */
 	this->restore_vertex_array();

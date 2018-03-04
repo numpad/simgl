@@ -41,15 +41,16 @@ bool sgl::texture::load(std::string fname)
 	glTexParameteri(this->type, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(this->type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(this->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(this->type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(this->type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	
 	/* load texture data */
 	stbi_set_flip_vertically_on_load(1);
 	int channels_in_file;
 	unsigned char *tex_data = stbi_load(fname.c_str(), &this->_width, &this->_height, &channels_in_file, 0);
-	
+	constexpr GLuint gl_channels[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+
 	/* upload texture data to gpu */
-	glTexImage2D(this->type, 0, GL_RGBA, this->_width, this->_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+	glTexImage2D(this->type, 0, GL_RGB, this->_width, this->_height, 0, gl_channels[channels_in_file - 1], GL_UNSIGNED_BYTE, tex_data);
 	glGenerateMipmap(this->type);
 	
 	/* free resources */

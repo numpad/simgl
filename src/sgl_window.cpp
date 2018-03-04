@@ -148,6 +148,11 @@ void sgl::window::set_size(int width, int height)
 	glfwSetWindowSize(this->glfw_window, width, height);
 }
 
+void sgl::window::capture_cursor(bool capture_enabled)
+{
+	glfwSetInputMode(this->glfw_window, GLFW_CURSOR, (capture_enabled ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL));
+}
+
 void sgl::window::close(bool close_window)
 {
 	glfwSetWindowShouldClose(this->glfw_window, (close_window ? GLFW_TRUE : GLFW_FALSE));

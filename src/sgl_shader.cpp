@@ -18,6 +18,11 @@ sgl::shader::~shader()
 	glDeleteProgram(this->program);
 }
 
+void sgl::shader::use()
+{
+	glUseProgram(this->program);
+}
+
 std::string sgl::shader::load_file(std::string fname)
 {
 	std::ifstream infile(fname);

@@ -13,6 +13,7 @@ namespace sgl {
 class mesh {
 	/* mesh data */
 	std::vector<GLfloat> vertices;
+	std::vector<GLuint> vertex_layout;
 
 	/* opengl data */
 	GLuint vertex_buffer;
@@ -30,14 +31,23 @@ class mesh {
 	void restore_vertex_array();
 public:
 	
-	mesh();
-	mesh(std::string obj_path);
+	GLuint get_vertex_array();
+
+	mesh(std::vector<GLuint> layout = {3, 3, 2});
+	mesh(std::string obj_path, std::vector<GLuint> layout = {3, 3, 2});
 	~mesh();
 	
+	/* load from file */
 	void load(std::string obj_path);
+
+	/* load from memory */
+	void add_vertex(std::vector<GLfloat> data);
+	void load();
 	
+
 	/* bind required data (vao, textures, ...) and call glDraw* */
 	void render();
+	void render_instanced(GLuint count);
 
 };
 

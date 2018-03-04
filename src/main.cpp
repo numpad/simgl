@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 #include <GL/gl3w.h>
 
@@ -183,11 +184,11 @@ int main(int argc, char *argv[]) {
 	/* shader */
 	sgl::shader world_shader("assets/vert.glsl", "assets/frag.glsl");
 	GLint uMVP = world_shader["MVP"];
-	world_shader["z_far"] = 750.0f;
+	world_shader["z_far"] = 10000.0f;
 	
 	/* model */
 	sgl::mesh world_mesh("assets/island.obj");
-	sgl::texture world_tex("assets/island.png");
+	sgl::texture world_tex("assets/island_texture.png");
 	world_shader["teximage"] = 0;
 
 	/* skybox */
@@ -205,6 +206,56 @@ int main(int argc, char *argv[]) {
 		"assets/negz.png",
 	});
 	
+	/* asteroid field */
+	sgl::mesh asteroid_mesh("assets/asteroid.obj");
+	sgl::texture asteroid_texture("assets/asteroid.png");
+	sgl::shader asteroid_shader("assets/instance_vert.glsl", "assets/instance_frag.glsl");
+	
+	std::vector<glm::mat4> asteroid_models;
+	srand(glfwGetTime() + 1273512);
+	for (int i = 0; i < 600; ++i) {
+		glm::mat4 mat(1.0f);
+		float angle = glm::radians(((float)rand() / (float)RAND_MAX) * 359.0f);
+		float len = ((float)rand() / (float)RAND_MAX) * 10000.0f + 90.0;
+		float height = ((float)rand() / (float)RAND_MAX) * 1000.0f - 200.0f;
+		float size = ((float)rand() / (float)RAND_MAX) * 60.0f + 8.0f;
+		
+		float rotation = ((float)rand() / (float)RAND_MAX) * 359.0f;
+		float rotx = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+		float roty = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+		float rotz = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+
+		mat = glm::translate(mat, glm::vec3(cosf(angle) * len, height, sinf(angle) * len));
+		mat = glm::scale(mat, glm::vec3(size));
+		mat = glm::rotate(mat, glm::radians(rotation), glm::vec3(rotx, roty, rotz));
+
+		asteroid_models.push_back(mat);
+	}
+	
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, asteroid_models.size() * sizeof(glm::mat4), &asteroid_models[0], GL_DYNAMIC_DRAW);
+	
+	glBindVertexArray(asteroid_mesh.get_vertex_array());
+
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(0 * sizeof(glm::vec4)));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(1 * sizeof(glm::vec4)));
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(2 * sizeof(glm::vec4)));
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(3 * sizeof(glm::vec4)));
+	
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+	glBindVertexArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	/* opengl */
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -217,12 +268,13 @@ int main(int argc, char *argv[]) {
 	
 	window.on_update([&](sgl::window &) {
 		/* inputs */
-		static float render_distance = 750.0f;
+		static float render_distance = 10000.0f;
 		controller_window(controller);
 		render_window(window, world_shader, &render_distance);
 		
 		ImGui::Begin("Camera");
 			float rot[] = {camera.get_yaw(), camera.get_pitch()};
+			static float camera_move_speed = 1.0f;
 			
 			ImGui::DragFloat3("Position", &camera.pos[0], 0.2f);
 			if (ImGui::DragFloat2("Rotation", rot, 0.5f)) {
@@ -230,6 +282,7 @@ int main(int argc, char *argv[]) {
 				rot[1] = fmodf(rot[1], 360.0f);
 				camera.set_rotation(rot[0], rot[1]);
 			}
+			ImGui::SliderFloat("Speed", &camera_move_speed, 0.1f, 100.0f);
 			
 			static bool recording = false;
 			
@@ -297,7 +350,7 @@ int main(int argc, char *argv[]) {
 			ImGui::SliderFloat("Speed", &cam_speed, 0.001f, 25.0f);
 			
 		ImGui::End();
-		
+
 		if (recording) {
 			if (glm::distance(cam_path.nodes.back().pos, camera.pos) >= cam_speed)
 				cam_path.add(CameraNode(camera));
@@ -305,12 +358,18 @@ int main(int argc, char *argv[]) {
 		
 		cam_path.follow(camera, cam_speed);
 		
+		for (glm::mat4 &mm : asteroid_models) {
+			mm = glm::rotate(mm, glm::radians(0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		glBufferData(GL_ARRAY_BUFFER, asteroid_models.size() * sizeof(glm::mat4), &asteroid_models[0], GL_DYNAMIC_DRAW);
+
 		/* recalculate matrices */
 		float c_l2 = (controller.get_axis(2) * 0.5 + 0.5) * -1.0f;
 		float c_r2 = (controller.get_axis(5) * 0.5 + 0.5) *  1.0f;
-		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f));
+		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f), camera_move_speed);
 		camera.rotate(controller.get_axis(3) * 1.25f, controller.get_axis(4) * -1.0f, 1.75f);
-		projection = glm::perspective(45.0f, (float)window.width / (float)window.height, 0.1f, render_distance);
+		projection = glm::perspective(glm::radians(45.0f), (float)window.width / (float)window.height, 0.1f, render_distance);
 		MVP = projection * camera.get_view() * model;
 		
 		/* update shader uniform mvp */
@@ -332,17 +391,24 @@ int main(int argc, char *argv[]) {
 		/* skybox */
 		glDepthMask(GL_FALSE);
 		skybox.bind(0);
-		glUseProgram(skybox_shader);
+		skybox_shader.use();
 		skybox_mesh.render();
-		glUseProgram(0);
 		skybox.unbind();
 		glDepthMask(GL_TRUE);
+		
+		/* asteroid */
+		asteroid_shader["mProjection"] = projection;
+		asteroid_shader["mView"] = camera.get_view();
+		asteroid_shader["TexImage"] = 0;
+		
+		asteroid_shader.use();
+		asteroid_texture.bind(0);
+		asteroid_mesh.render_instanced(asteroid_models.size());
 
 		/* world */
 		world_tex.bind(0);
-		glUseProgram(world_shader);
+		world_shader.use();
 		world_mesh.render();
-		glUseProgram(0);
 		world_tex.unbind();
 
 	});

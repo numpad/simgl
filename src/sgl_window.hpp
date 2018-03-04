@@ -102,6 +102,13 @@ namespace sgl {
 		 * @see sgl::window::height
 		 */
 		void set_size(int width, int height);
+		
+		/**
+		 * @brief Request the cursor to be hidden and captured.
+		 *
+		 * @param capture_enabled Set the capture state.
+		 */
+		 void capture_cursor(bool capture_enabled = true);
 
 		/**
 		 * @brief Enable/Disable wireframe.

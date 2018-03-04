@@ -177,6 +177,13 @@ namespace sgl {
 		operator GLuint() const;
 		
 		/**
+		 * @brief Use the shader.
+		 * 
+		 * @todo
+		 */
+		void use();
+
+		/**
 		 * @brief Get the location of the uniform @em uniform_name.
 		 *
 		 * It is encouraged working with sgl::shader#operator[]() and using sgl::shader_uniform

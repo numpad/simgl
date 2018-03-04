@@ -11,7 +11,7 @@ namespace sgl {
 	class texture {
 		GLuint texture_id;
 		GLint _width, _height;
-		
+
 		GLenum type;
 
 	public:
