@@ -14,16 +14,20 @@ class mesh {
 	/* mesh data */
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> vertex_layout;
+	
+	/* instance data */
+	std::vector<GLuint> instance_data_buffers;
+	std::vector<size_t> instance_data_block_sizes;
 
 	/* opengl data */
 	GLuint vertex_buffer;
 	GLuint vertex_array;
 	
 	GLuint attrib_index = 0;
-	GLuint attrib_offset = 0;
+	size_t attrib_stride = 0;
 	void init_vertex_data();
-	void add_vertex_attrib(GLuint count, GLuint max_count);
-	void add_vertex_attribs(std::vector<GLuint> sizes);
+	void add_vertex_attrib(GLuint count, GLuint max_count, size_t sizeof_data = sizeof(GLfloat));
+	void add_vertex_attribs(std::vector<GLuint> sizes, size_t sizeof_data = sizeof(GLfloat));
 	
 	/* use & restore vertex array */
 	GLint prev_vertex_array;
@@ -44,6 +48,9 @@ public:
 	void add_vertex(std::vector<GLfloat> data);
 	void load();
 	
+	/* instancing */
+	size_t add_instance_buffer(std::vector<GLuint> layout, bool combine_data = false);
+	void update_instance_buffer(size_t instance_buffer_index, GLvoid *data, size_t count);
 
 	/* bind required data (vao, textures, ...) and call glDraw* */
 	void render();

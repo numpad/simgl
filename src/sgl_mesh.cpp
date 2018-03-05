@@ -18,6 +18,10 @@ sgl::mesh::~mesh()
 {
 	glDeleteVertexArrays(1, &this->vertex_array);
 	glDeleteBuffers(1, &this->vertex_buffer);
+
+	for (GLuint &i : this->instance_data_buffers) {
+		glDeleteBuffers(1, &i);
+	}
 }
 
 GLuint sgl::mesh::get_vertex_array()
@@ -33,20 +37,20 @@ void sgl::mesh::init_vertex_data()
 	this->restore_vertex_array();
 }
 
-void sgl::mesh::add_vertex_attrib(GLuint count, GLuint max_count)
+void sgl::mesh::add_vertex_attrib(GLuint count, GLuint max_count, size_t sizeof_data)
 {
 	this->use_vertex_array();
 	glBindBuffer(GL_ARRAY_BUFFER, this->vertex_buffer);
 	
-	glVertexAttribPointer(this->attrib_index, count, GL_FLOAT, GL_FALSE, max_count * sizeof(GLfloat), (void *)(this->attrib_offset * sizeof(GLfloat)));
+	glVertexAttribPointer(this->attrib_index, count, GL_FLOAT, GL_FALSE, max_count * sizeof_data, (void *)(this->attrib_stride));
 	glEnableVertexAttribArray(this->attrib_index);
 	this->restore_vertex_array();
 	
 	this->attrib_index++;
-	this->attrib_offset += count;
+	this->attrib_stride += count * sizeof_data;
 }
 
-void sgl::mesh::add_vertex_attribs(std::vector<GLuint> sizes)
+void sgl::mesh::add_vertex_attribs(std::vector<GLuint> sizes, size_t sizeof_data)
 {
 	GLuint stride = 0;
 	for (size_t i = 0; i < sizes.size(); ++i) {
@@ -54,7 +58,7 @@ void sgl::mesh::add_vertex_attribs(std::vector<GLuint> sizes)
 	}
 	
 	for (size_t i = 0; i < sizes.size(); ++i)
-		this->add_vertex_attrib(sizes.at(i), stride);
+		this->add_vertex_attrib(sizes.at(i), stride, sizeof_data);
 }
 
 void sgl::mesh::use_vertex_array()
@@ -87,6 +91,46 @@ void sgl::mesh::load()
 {
 	this->init_vertex_data();
 	this->add_vertex_attribs(this->vertex_layout);
+}
+
+size_t sgl::mesh::add_instance_buffer(std::vector<GLuint> layout, bool combine_data)
+{
+	size_t buffer_i = this->instance_data_buffers.size();
+	this->instance_data_buffers.push_back(0);
+	GLuint &buffer = this->instance_data_buffers.at(buffer_i);
+	
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	
+	this->use_vertex_array();
+	
+	GLuint layout_sum = 0;
+	for (GLuint v : layout)
+		layout_sum += v;
+	
+	this->instance_data_block_sizes.push_back(layout_sum);
+
+
+	for (size_t i = 0; i < layout.size(); ++i) {
+		GLuint block_size = (combine_data ? layout_sum : layout[i]);
+		glEnableVertexAttribArray(this->attrib_index);
+		glVertexAttribDivisor(this->attrib_index, 1);
+		glVertexAttribPointer(this->attrib_index, layout[i], GL_FLOAT, GL_FALSE, block_size * sizeof(GLfloat), (void *)(i * (layout[i] * sizeof(GLfloat))));
+
+		this->attrib_index++;
+	}
+
+	this->restore_vertex_array();
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	return buffer_i;
+}
+
+void sgl::mesh::update_instance_buffer(size_t instance_buffer_index, GLvoid *data, size_t count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, this->instance_data_buffers.at(instance_buffer_index));
+	glBufferData(GL_ARRAY_BUFFER, count * this->instance_data_block_sizes.at(instance_buffer_index) * sizeof(GLfloat), data, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void sgl::mesh::render()
