@@ -159,7 +159,7 @@ void render_window(sgl::window &window, sgl::shader &world_shader, float *render
 	ImGui::End();
 }
 
-void new_asteroid(std::vector<glm::mat4> &asteroid_models)
+void new_asteroid(std::vector<glm::mat4> &asteroid_models, std::vector<glm::vec3> &asteroid_colors)
 {
 	glm::mat4 mat(1.0f);
 	float angle = glm::radians(((float)rand() / (float)RAND_MAX) * 359.0f);
@@ -177,6 +177,11 @@ void new_asteroid(std::vector<glm::mat4> &asteroid_models)
 	mat = glm::rotate(mat, glm::radians(rotation), glm::vec3(rotx, roty, rotz));
 
 	asteroid_models.push_back(mat);
+	asteroid_colors.push_back(glm::vec3(
+		((float)rand() / RAND_MAX),
+		((float)rand() / RAND_MAX),
+		((float)rand() / RAND_MAX)
+	));
 }
 
 #if defined(_WIN32) && !defined(_DEBUG)
@@ -232,34 +237,14 @@ int main(int argc, char *argv[]) {
 	sgl::shader asteroid_shader("assets/instance_vert.glsl", "assets/instance_frag.glsl");
 	
 	std::vector<glm::mat4> asteroid_models;
+	std::vector<glm::vec3> asteroid_colors;
 	srand(glfwGetTime() * 1273512);
 	for (int i = 0; i < 10; ++i) {
-		new_asteroid(asteroid_models);
+		new_asteroid(asteroid_models, asteroid_colors);
 	}
 	
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, asteroid_models.size() * sizeof(glm::mat4), &asteroid_models[0], GL_DYNAMIC_DRAW);
-	
-	glBindVertexArray(asteroid_mesh.get_vertex_array());
-
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(0 * sizeof(glm::vec4)));
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(1 * sizeof(glm::vec4)));
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(2 * sizeof(glm::vec4)));
-	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void *)(3 * sizeof(glm::vec4)));
-	
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	glVertexAttribDivisor(6, 1);
-	glBindVertexArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	asteroid_mesh.add_instance_buffer({4, 4, 4, 4}, true);
+	asteroid_mesh.add_instance_buffer({3});
 
 	/* opengl */
 	glEnable(GL_DEPTH_TEST);
@@ -366,12 +351,12 @@ int main(int argc, char *argv[]) {
 		for (glm::mat4 &mm : asteroid_models) {
 			mm = glm::rotate(mm, glm::radians(0.25f), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBufferData(GL_ARRAY_BUFFER, asteroid_models.size() * sizeof(glm::mat4), &asteroid_models[0], GL_DYNAMIC_DRAW);
+		asteroid_mesh.update_instance_buffer(0, &asteroid_models[0], asteroid_models.size());
+		asteroid_mesh.update_instance_buffer(1, &asteroid_colors[0], asteroid_colors.size());
 
 		/* recalculate matrices */
 		if (controller.get_button(4))
-			new_asteroid(asteroid_models);
+			new_asteroid(asteroid_models, asteroid_colors);
 		float c_l2 = (controller.get_axis(2) * 0.5 + 0.5) * -1.0f;
 		float c_r2 = (controller.get_axis(5) * 0.5 + 0.5) *  1.0f;
 		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f), camera_move_speed);
@@ -392,7 +377,6 @@ int main(int argc, char *argv[]) {
 		skybox_shader["Time"] = (float)glfwGetTime();
 		
 		/* render code */
-		glClearColor(0.4f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 		/* skybox */
