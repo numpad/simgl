@@ -159,6 +159,26 @@ void render_window(sgl::window &window, sgl::shader &world_shader, float *render
 	ImGui::End();
 }
 
+void new_asteroid(std::vector<glm::mat4> &asteroid_models)
+{
+	glm::mat4 mat(1.0f);
+	float angle = glm::radians(((float)rand() / (float)RAND_MAX) * 359.0f);
+	float len = ((float)rand() / (float)RAND_MAX) * 10000.0f + 90.0;
+	float height = ((float)rand() / (float)RAND_MAX) * 1000.0f - 200.0f;
+	float size = ((float)rand() / (float)RAND_MAX) * 60.0f + 8.0f;
+	
+	float rotation = ((float)rand() / (float)RAND_MAX) * 359.0f;
+	float rotx = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+	float roty = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+	float rotz = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+
+	mat = glm::translate(mat, glm::vec3(cosf(angle) * len, height, sinf(angle) * len));
+	mat = glm::scale(mat, glm::vec3(size));
+	mat = glm::rotate(mat, glm::radians(rotation), glm::vec3(rotx, roty, rotz));
+
+	asteroid_models.push_back(mat);
+}
+
 #if defined(_WIN32) && !defined(_DEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {
 #else
@@ -212,24 +232,9 @@ int main(int argc, char *argv[]) {
 	sgl::shader asteroid_shader("assets/instance_vert.glsl", "assets/instance_frag.glsl");
 	
 	std::vector<glm::mat4> asteroid_models;
-	srand(glfwGetTime() + 1273512);
-	for (int i = 0; i < 600; ++i) {
-		glm::mat4 mat(1.0f);
-		float angle = glm::radians(((float)rand() / (float)RAND_MAX) * 359.0f);
-		float len = ((float)rand() / (float)RAND_MAX) * 10000.0f + 90.0;
-		float height = ((float)rand() / (float)RAND_MAX) * 1000.0f - 200.0f;
-		float size = ((float)rand() / (float)RAND_MAX) * 60.0f + 8.0f;
-		
-		float rotation = ((float)rand() / (float)RAND_MAX) * 359.0f;
-		float rotx = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-		float roty = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-		float rotz = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-
-		mat = glm::translate(mat, glm::vec3(cosf(angle) * len, height, sinf(angle) * len));
-		mat = glm::scale(mat, glm::vec3(size));
-		mat = glm::rotate(mat, glm::radians(rotation), glm::vec3(rotx, roty, rotz));
-
-		asteroid_models.push_back(mat);
+	srand(glfwGetTime() * 1273512);
+	for (int i = 0; i < 10; ++i) {
+		new_asteroid(asteroid_models);
 	}
 	
 	GLuint buffer;
@@ -359,12 +364,14 @@ int main(int argc, char *argv[]) {
 		cam_path.follow(camera, cam_speed);
 		
 		for (glm::mat4 &mm : asteroid_models) {
-			mm = glm::rotate(mm, glm::radians(0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+			mm = glm::rotate(mm, glm::radians(0.25f), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
 		glBufferData(GL_ARRAY_BUFFER, asteroid_models.size() * sizeof(glm::mat4), &asteroid_models[0], GL_DYNAMIC_DRAW);
 
 		/* recalculate matrices */
+		if (controller.get_button(4))
+			new_asteroid(asteroid_models);
 		float c_l2 = (controller.get_axis(2) * 0.5 + 0.5) * -1.0f;
 		float c_r2 = (controller.get_axis(5) * 0.5 + 0.5) *  1.0f;
 		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f), camera_move_speed);

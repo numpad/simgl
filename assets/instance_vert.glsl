@@ -13,7 +13,7 @@ out vec2 texcoord;
 
 void main() {
 	texcoord = TexCoord;
-	normal = mat3(transpose(inverse(InstanceModel))) * Normal;
+	normal = normalize(mat3(transpose(inverse(InstanceModel))) * Normal);
 	gl_Position = mProjection * mView * InstanceModel * vec4(Position, 1.0);
 }
 
