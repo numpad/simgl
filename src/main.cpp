@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <map>
 
 #include <GL/gl3w.h>
 
@@ -18,6 +19,7 @@
 #include "sgl_texture.hpp"
 #include "sgl_joystick.hpp"
 #include "sgl_camera.hpp"
+#include "sgl_timer.hpp"
 
 struct CameraNode {
 	glm::vec3 pos;
@@ -222,34 +224,64 @@ int main(int argc, char *argv[]) {
 	sgl::texture skybox(GL_TEXTURE_CUBE_MAP);
 	glm::mat4 skybox_model(1.0f);
 	
-	skybox.load_cubemap({
-		"assets/posx.png",
-		"assets/negx.png",
-		"assets/posy.png",
-		"assets/negy.png",
-		"assets/posz.png",
-		"assets/negz.png",
-	});
+	sgl::timer::measure([&](){
+		skybox.load_cubemap({
+			"assets/posx.png",
+			"assets/negx.png",
+			"assets/posy.png",
+			"assets/negy.png",
+			"assets/posz.png",
+			"assets/negz.png",
+		});
+	}, "Skybox loading");
 	
 	/* asteroid field */
 	sgl::mesh asteroid_mesh("assets/asteroid.obj");
 	sgl::texture asteroid_texture("assets/asteroid.png");
+	sgl::texture asteroid_normals("assets/asteroid_normals.png");
 	sgl::shader asteroid_shader("assets/instance_vert.glsl", "assets/instance_frag.glsl");
 	
 	std::vector<glm::mat4> asteroid_models;
 	std::vector<glm::vec3> asteroid_colors;
 	srand(glfwGetTime() * 1273512);
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 500; ++i) {
 		new_asteroid(asteroid_models, asteroid_colors);
 	}
 	
 	asteroid_mesh.add_instance_buffer({4, 4, 4, 4}, true);
 	asteroid_mesh.add_instance_buffer({3});
+	
+	/* grass */
+	sgl::texture grass_texture("assets/grass.png");
+	grass_texture.set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	grass_texture.set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	sgl::mesh grass_mesh("assets/grass.obj");
+	sgl::shader grass_shader("assets/grass_vert.glsl", "assets/grass_frag.glsl");
+	
+	grass_mesh.add_instance_buffer({4, 4, 4, 4}, true);
+	
+	std::vector<glm::mat4> grass_positions;
+	for (size_t i = 0; i < 200; ++i) {
+		glm::vec3 pos(
+			((float)rand() / (float)RAND_MAX) * 120.0f - 60.0f,
+			0.0f,
+			((float)rand() / (float)RAND_MAX) * 120.0f - 60.0f
+		);
+		glm::vec3 scale(((float)rand() / RAND_MAX) * 8.0f + 2.0f);
+
+		glm::mat4 mod(1.0f);
+		mod = glm::translate(mod, pos);
+		mod = glm::scale(mod, scale);
+		grass_positions.push_back(mod);
+	}
+	grass_mesh.update_instance_buffer(0, &grass_positions[0], grass_positions.size());
 
 	/* opengl */
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	ImGui::StyleColorsLight();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -391,9 +423,11 @@ int main(int argc, char *argv[]) {
 		asteroid_shader["mProjection"] = projection;
 		asteroid_shader["mView"] = camera.get_view();
 		asteroid_shader["TexImage"] = 0;
+		asteroid_shader["TexNormal"] = 1;
 		
 		asteroid_shader.use();
 		asteroid_texture.bind(0);
+		asteroid_normals.bind(1);
 		asteroid_mesh.render_instanced(asteroid_models.size());
 
 		/* world */
@@ -401,7 +435,30 @@ int main(int argc, char *argv[]) {
 		world_shader.use();
 		world_mesh.render();
 		world_tex.unbind();
+		
+		/* grass */
+		std::map<float, glm::mat4> sorted;
+		for (size_t i = 0; i < grass_positions.size(); ++i) {
+			glm::vec3 pos = glm::vec3(grass_positions[i][3]);
+			float dist = glm::length(camera.pos - pos);
+			sorted[dist] = grass_positions[i];
+		}
+		std::vector<glm::mat4> grass_models_rev;
+		
+		for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
+			grass_models_rev.push_back(it->second);
+		}
 
+		grass_mesh.update_instance_buffer(0, &grass_models_rev[0], grass_models_rev.size());
+
+		grass_shader["mProjection"] = projection;
+		grass_shader["mView"] = camera.get_view();
+
+		glEnable(GL_BLEND);
+		grass_texture.bind(0);
+		grass_shader.use();
+		grass_mesh.render_instanced(grass_positions.size());
+		glDisable(GL_BLEND);
 	});
 	
 	return 0;
