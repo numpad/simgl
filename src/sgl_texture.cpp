@@ -33,6 +33,22 @@ sgl::texture::operator GLuint() const
 	return this->texture_id;
 }
 
+template <>
+void sgl::texture::set_parameter<GLint>(GLenum parameter_name, GLint value)
+{
+	glBindTexture(this->type, this->texture_id);
+	glTexParameteri(this->type, parameter_name, value);
+	glBindTexture(this->type, 0);
+}
+
+template <>
+void sgl::texture::set_parameter<GLfloat>(GLenum parameter_name, GLfloat value)
+{
+	glBindTexture(this->type, this->texture_id);
+	glTexParameterf(this->type, parameter_name, value);
+	glBindTexture(this->type, 0);
+}
+
 bool sgl::texture::load(std::string fname)
 {
 	glBindTexture(this->type, this->texture_id);
@@ -50,7 +66,7 @@ bool sgl::texture::load(std::string fname)
 	constexpr GLuint gl_channels[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
 
 	/* upload texture data to gpu */
-	glTexImage2D(this->type, 0, GL_RGB, this->_width, this->_height, 0, gl_channels[channels_in_file - 1], GL_UNSIGNED_BYTE, tex_data);
+	glTexImage2D(this->type, 0, gl_channels[channels_in_file - 1], this->_width, this->_height, 0, gl_channels[channels_in_file - 1], GL_UNSIGNED_BYTE, tex_data);
 	glGenerateMipmap(this->type);
 	
 	/* free resources */

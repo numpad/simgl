@@ -15,7 +15,6 @@ namespace sgl {
 		GLenum type;
 
 	public:
-		
 		texture(GLenum texture_type = GL_TEXTURE_2D);
 		texture(std::string fname, GLenum texture_type = GL_TEXTURE_2D);
 		
@@ -24,8 +23,11 @@ namespace sgl {
 		
 		bool load(std::string fname);
 		bool load_cubemap(std::vector<std::string> fnames);
-
+		
 		operator GLuint() const;
+		
+		template <typename T>
+		void set_parameter(GLenum parameter_name, T value);
 
 		void bind(GLint value);
 		void unbind();
