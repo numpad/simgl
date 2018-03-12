@@ -264,9 +264,9 @@ int main(int argc, char *argv[]) {
 	std::vector<glm::mat4> grass_positions;
 	for (size_t i = 0; i < 200; ++i) {
 		glm::vec3 pos(
-			((float)rand() / (float)RAND_MAX) * 120.0f - 60.0f,
+			((float)rand() / (float)RAND_MAX) * 100.0f - 50.0f,
 			0.0f,
-			((float)rand() / (float)RAND_MAX) * 120.0f - 60.0f
+			((float)rand() / (float)RAND_MAX) * 100.0f - 50.0f
 		);
 		glm::vec3 scale(((float)rand() / RAND_MAX) * 8.0f + 2.0f);
 
