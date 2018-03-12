@@ -53,8 +53,8 @@ public:
 	void update_instance_buffer(size_t instance_buffer_index, GLvoid *data, size_t count);
 
 	/* bind required data (vao, textures, ...) and call glDraw* */
-	void render();
-	void render_instanced(GLuint count);
+	void render(GLenum draw_mode = GL_TRIANGLES);
+	void render_instanced(GLuint count, GLenum draw_mode = GL_TRIANGLES);
 
 };
 

@@ -133,23 +133,23 @@ void sgl::mesh::update_instance_buffer(size_t instance_buffer_index, GLvoid *dat
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void sgl::mesh::render()
+void sgl::mesh::render(GLenum draw_mode)
 {
 	/* store current vertex array object */
 	this->use_vertex_array();
 	
-	glDrawArrays(GL_TRIANGLES, 0, this->vertices.size());
+	glDrawArrays(draw_mode, 0, this->vertices.size());
 	
 	/* restore previous vao */
 	this->restore_vertex_array();
 }
 
-void sgl::mesh::render_instanced(GLuint count)
+void sgl::mesh::render_instanced(GLuint count, GLenum draw_mode)
 {
 	/* store current vertex array object */
 	this->use_vertex_array();
 	
-	glDrawArraysInstanced(GL_TRIANGLES, 0, this->vertices.size(), count);
+	glDrawArraysInstanced(draw_mode, 0, this->vertices.size(), count);
 	
 	/* restore previous vao */
 	this->restore_vertex_array();
