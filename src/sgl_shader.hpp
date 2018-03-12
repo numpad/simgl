@@ -70,22 +70,33 @@ namespace sgl {
 		enum type {
 			VERTEX,		/**< Operate on the vertex shader. */
 			FRAGMENT,	/**< Operate on the fragment shader. */
+			GEOMETRY,	/**< Operate on the geometry shader. */
 			MAX_TYPES	/**< Use this to iterate over every shader type.  */
 		};
 		
 	private:
 		
+		enum shader_stage {
+			STAGE_EMPTY,
+			STAGE_LOADED,
+			STAGE_COMPILED,
+			STAGE_LINKED
+		};
+
 		/* translate sgl::shader::type to OpenGL shader type */
 		GLenum type_to_gl_shader[sgl::shader::MAX_TYPES] = {
 			GL_VERTEX_SHADER,
-			GL_FRAGMENT_SHADER
+			GL_FRAGMENT_SHADER,
+			GL_GEOMETRY_SHADER
 		};
 		
 		std::string type_to_name[sgl::shader::MAX_TYPES] = {
 			"vertex",
-			"fragment"
+			"fragment",
+			"geometry"
 		};
 		
+		shader_stage stage_of_type[sgl::shader::MAX_TYPES];
 		char *shaders_src[sgl::shader::MAX_TYPES];
 		GLuint shaders[sgl::shader::MAX_TYPES];
 		GLuint program;
@@ -269,11 +280,29 @@ namespace sgl {
 		 * @param fname Path, filename of shader source.
 		 * @param type Shader type (e.g. vertex shader, fragment shader)
 		 * @return true if the shader successfully loaded.
+		 * @see sgl::shader#load_from_memory()
 		 * @see sgl::shader#compile()
 		 * @see sgl::shader#link()
 		 */
 		bool load(std::string fname, sgl::shader::type type);
 		
+		/**
+		 * @brief Loads a shader of type @em type from memory.
+		 * 
+		 * Load a shader already in memory in form of a std::string.
+		 * Mostly used to include a hardcoded shader or using a custom
+		 * file loader.
+		 * Needs to be compiled and linked after loading.
+		 * 
+		 * @param ssrc Shader source code.
+		 * @param type Shader type (e.g. vertex shader, fragment shader)
+		 * @return true if the shader successfully loaded.
+		 * @see sgl::shader#load()
+		 * @see sgl::shader#compile()
+		 * @see sgl::shader#link()
+		 */
+		bool load_from_memory(std::string ssrc, sgl::shader::type type);
+
 		/**
 		 * @brief Compiles a previously loaded shader of sgl::shader#type @em type.
 		 * 
@@ -286,6 +315,7 @@ namespace sgl {
 		 * @pre Can only compile already @link sgl::shader#load() loaded @endlink shaders.
 		 *
 		 * @see sgl::shader#load()
+		 * @see sgl::shader#load_from_memory()
 		 * @see sgl::shader#link()
 		 */
 		bool compile(sgl::shader::type type);
@@ -302,6 +332,7 @@ namespace sgl {
 		 *      and @link sgl::shader#compile() compiled @endlink.
 		 *
 		 * @see sgl::shader#load()
+		 * @see sgl::shader#load_from_memory()
 		 * @see sgl::shader#compile()
 		 */
 		bool link();

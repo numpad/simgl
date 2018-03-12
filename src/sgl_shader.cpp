@@ -2,6 +2,7 @@
 
 sgl::shader::shader(std::string fname_vert, std::string fname_frag)
 {
+	
 	this->load(fname_vert, sgl::shader::VERTEX);
 	this->load(fname_frag, sgl::shader::FRAGMENT);
 	this->compile(sgl::shader::VERTEX);
@@ -11,6 +12,8 @@ sgl::shader::shader(std::string fname_vert, std::string fname_frag)
 
 sgl::shader::shader()
 {
+	for (size_t i = 0; i < sgl::shader::MAX_TYPES; ++i)
+		this->stage_of_type[i] = sgl::shader::STAGE_EMPTY;
 }
 
 sgl::shader::~shader()
@@ -37,22 +40,31 @@ bool sgl::shader::load(std::string fname, sgl::shader::type type)
 {
 	std::string content = sgl::shader::load_file(fname);
 	
-	/* error loading file */
-	if (content.size() == 0)
+	return this->load_from_memory(content, type);
+}
+
+bool sgl::shader::load_from_memory(std::string ssrc, sgl::shader::type type)
+{
+	if (ssrc.size() == 0)
 		return false;
 	
-	const char *src = content.c_str();
-	
-	const size_t src_len = strlen(src);
+	const size_t src_len = ssrc.size();
 	this->shaders_src[type] = new char[src_len + 1];
-	strncpy(this->shaders_src[type], src, src_len);
+	strncpy(this->shaders_src[type], ssrc.c_str(), src_len);
 	this->shaders_src[type][src_len] = 0;
 	
+	this->stage_of_type[type] = sgl::shader::STAGE_LOADED;
+
 	return true;
 }
 
 bool sgl::shader::compile(sgl::shader::type type)
 {
+	if (this->stage_of_type[type] != sgl::shader::STAGE_LOADED) {
+		std::cout << "Cannot compile " << sgl::shader::type_to_name[type] << " shader. Is it loaded?" << std::endl;
+		return false;
+	}
+
 	this->shaders[type] = glCreateShader(sgl::shader::type_to_gl_shader[type]);
 	glShaderSource(this->shaders[type], 1, (const GLchar* const*)&(this->shaders_src[type]), NULL);
 	glCompileShader(this->shaders[type]);
@@ -68,6 +80,8 @@ bool sgl::shader::compile(sgl::shader::type type)
 		
 		std::cout << "Failed compiling " << sgl::shader::type_to_name[type] << " shader:" << std::endl;
 		std::cout << info_log << std::endl;
+	} else {
+		this->stage_of_type[type] = sgl::shader::STAGE_COMPILED;
 	}
 	
 	return success;
@@ -77,7 +91,8 @@ bool sgl::shader::link()
 {
 	this->program = glCreateProgram();
 	for (size_t i = 0; i < sgl::shader::MAX_TYPES; ++i) {
-		glAttachShader(this->program, this->shaders[i]);
+		if (this->stage_of_type[i] == sgl::shader::STAGE_COMPILED)
+			glAttachShader(this->program, this->shaders[i]);
 	}
 	glLinkProgram(this->program);
 	
@@ -94,12 +109,20 @@ bool sgl::shader::link()
 		std::cout << info_log << std::endl;
 		
 		return false;
+	} else {
+		for (size_t i = 0; i < sgl::shader::MAX_TYPES; ++i) {
+			if (this->stage_of_type[i] == sgl::shader::STAGE_COMPILED) {
+				this->stage_of_type[i] = sgl::shader::STAGE_LINKED;
+			}
+		}
 	}
 	
 	/* free resources */
 	for (size_t i = 0; i < sgl::shader::MAX_TYPES; ++i) {
-		glDeleteShader(this->shaders[i]);
-		delete[] this->shaders_src[i];
+		if (this->stage_of_type[i] == sgl::shader::STAGE_LINKED) {
+			glDeleteShader(this->shaders[i]);
+			delete[] this->shaders_src[i];
+		}
 	}
 
 	return true;
