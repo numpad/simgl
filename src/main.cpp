@@ -189,7 +189,7 @@ void new_asteroid(std::vector<glm::mat4> &asteroid_models, std::vector<glm::vec3
 #if defined(_WIN32) && !defined(_DEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {
 #else
-int main(int argc, char *argv[]) {
+int __main(int argc, char *argv[]) {
 #endif
 	sgl::window_context wctx;
 	wctx.resizable = false;
