@@ -286,7 +286,6 @@ public:
 	
 	void lookAt(CVec3 *target) {
 		std::cout << "x: " << target->x << ", y: " << target->y << ", z: " << target->z << std::endl;
-		this->look_at(glm::vec3(target->x, target->y, target->z));
 	}
 	
 	void move_relative(CVec3 *v) {
