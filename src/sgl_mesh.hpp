@@ -10,6 +10,9 @@
 
 namespace sgl {
 
+/**
+ * @brief Collection of vertices and their 
+ */
 class mesh {
 	/* mesh data */
 	std::vector<GLfloat> vertices;
