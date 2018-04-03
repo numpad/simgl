@@ -1,15 +1,15 @@
 
-Console c1;
-Console c2;
+Console console;
+Camera scam(0.0f, 0.0f, 0.0f);
 
 void on_load() {
-	c1.log("Hello, World!!!");
-	c2.log("Aw man");
+	console.log("Debug Console - AngelScript");
+	
+	//RegisterCamera(scam);
 
 }
 
 void on_render() {
-	c1.render();
-	c2.render();
+	console.render();
 }
 
