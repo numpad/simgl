@@ -45,6 +45,12 @@
     <ClInclude Include="src\sgl_window_context.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lib\windows\GLFW\glfw3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\windows\GLFW\glfw3native.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\frag.glsl">
@@ -65,9 +71,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\script.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\sgl_camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -123,6 +126,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lib\windows\angelscript\add_on\scripthelper\scripthelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\geom_shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

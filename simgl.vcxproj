@@ -82,12 +82,13 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;angelscriptd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;angelscriptd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,6 +98,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -104,10 +106,12 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;angelscript.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;angelscript.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="lib\windows\GLFW\glfw3.h" />
+    <ClInclude Include="lib\windows\GLFW\glfw3native.h" />
     <ClInclude Include="src\sgl_camera.hpp" />
     <ClInclude Include="src\sgl_joystick.hpp" />
     <ClInclude Include="src\sgl_mesh.hpp" />
@@ -139,7 +143,7 @@
     <ClCompile Include="lib\windows\imgui\imgui.cpp" />
     <ClCompile Include="lib\windows\imgui\imgui_draw.cpp" />
     <ClCompile Include="lib\windows\imgui\imgui_impl.cpp" />
-    <ClCompile Include="src\script.cpp" />
+    <ClCompile Include="src\geom_shader.cpp" />
     <ClCompile Include="src\sgl_camera.cpp" />
     <ClCompile Include="src\sgl_joystick.cpp" />
     <ClCompile Include="src\sgl_mesh.cpp" />
