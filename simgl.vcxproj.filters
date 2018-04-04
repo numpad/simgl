@@ -128,7 +128,7 @@
     <ClCompile Include="lib\windows\angelscript\add_on\scripthelper\scripthelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\geom_shader.cpp">
+    <ClCompile Include="WaterTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

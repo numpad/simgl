@@ -71,7 +71,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Chris\Desktop\simgl\lib\windows;C:\Users\Chris\Desktop\simgl\lib\windows\angelscript\angelscript\include;C:\Users\Chris\Desktop\simgl\lib\windows\angelscript\add_on;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Chris\Desktop\simgl\lib\windows;C:\Users\Chris\Desktop\simgl\lib\windows\angelscript\angelscript\include;C:\Users\Chris\Desktop\simgl\lib\windows\angelscript\add_on;C:\Users\Chris\Desktop\simgl\src;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Chris\Desktop\simgl\lib\windows;C:\Users\Chris\Desktop\simgl\lib\windows\angelscript\angelscript\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -143,7 +143,6 @@
     <ClCompile Include="lib\windows\imgui\imgui.cpp" />
     <ClCompile Include="lib\windows\imgui\imgui_draw.cpp" />
     <ClCompile Include="lib\windows\imgui\imgui_impl.cpp" />
-    <ClCompile Include="src\geom_shader.cpp" />
     <ClCompile Include="src\sgl_camera.cpp" />
     <ClCompile Include="src\sgl_joystick.cpp" />
     <ClCompile Include="src\sgl_mesh.cpp" />
@@ -154,6 +153,7 @@
     <ClCompile Include="src\sgl_timer.cpp" />
     <ClCompile Include="src\sgl_window.cpp" />
     <ClCompile Include="src\sgl_window_context.cpp" />
+    <ClCompile Include="WaterTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
