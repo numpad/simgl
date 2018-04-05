@@ -135,7 +135,11 @@ namespace sgl {
 		 * @brief Set the swap interval.
 		 */
 		int swap_interval = 1;
-		
+		/**
+		 * @brief Number of samples for multisampling.
+		 */
+		int samples = GLFW_DONT_CARE;
+
 		/**
 		 * @brief Enable/Disable fullscreen.
 		 * 

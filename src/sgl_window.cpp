@@ -53,6 +53,7 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	glfwWindowHint(GLFW_FOCUSED, wctx.focused);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, wctx.double_buffer);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, wctx.forward_compat);
+	glfwWindowHint(GLFW_SAMPLES, wctx.samples);
 
 	
 	/* use primary monitor for fullscreen */
