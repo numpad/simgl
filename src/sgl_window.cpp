@@ -55,7 +55,6 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, wctx.forward_compat);
 	glfwWindowHint(GLFW_SAMPLES, wctx.samples);
 
-	
 	/* use primary monitor for fullscreen */
 	GLFWmonitor *monitor = (wctx.fullscreen ? glfwGetPrimaryMonitor() : NULL);
 	
@@ -105,6 +104,9 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	ImGui::CreateContext();
 	ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
 	
+	/* initialize input */
+	sgl::input::attach(this->glfw_window);
+
 	return true;
 }
 
