@@ -13,7 +13,6 @@
 #include <imgui/imgui_impl.h>
 
 #include "sgl_window_context.hpp"
-#include "sgl_input.hpp"
 
 namespace sgl {
 	
