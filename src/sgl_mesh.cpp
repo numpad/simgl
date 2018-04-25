@@ -4,7 +4,7 @@ sgl::mesh::mesh(std::vector<GLuint> layout)
 {
 	glGenVertexArrays(1, &this->vertex_array);
 	glGenBuffers(1, &this->vertex_buffer);
-
+	
 	this->vertex_layout = layout;
 }
 
@@ -18,7 +18,8 @@ sgl::mesh::~mesh()
 {
 	glDeleteVertexArrays(1, &this->vertex_array);
 	glDeleteBuffers(1, &this->vertex_buffer);
-
+	glDeleteBuffers(1, &this->index_buffer);
+	
 	for (GLuint &i : this->instance_data_buffers) {
 		glDeleteBuffers(1, &i);
 	}
@@ -81,6 +82,17 @@ void sgl::mesh::load(std::string obj_path)
 	this->init_vertex_data();
 	this->add_vertex_attribs(this->vertex_layout);
 }
+void sgl::mesh::set_indices(std::vector<GLuint> indices)
+{
+	glGenBuffers(1, &this->index_buffer);
+	this->indices = indices.size();
+
+	this->use_vertex_array();
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->index_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	this->restore_vertex_array();
+}
 	
 void sgl::mesh::add_vertex(std::vector<GLfloat> data)
 {
@@ -141,6 +153,15 @@ void sgl::mesh::render(GLenum draw_mode)
 	glDrawArrays(draw_mode, 0, this->vertices.size());
 	
 	/* restore previous vao */
+	this->restore_vertex_array();
+}
+void sgl::mesh::render_indexed(GLenum draw_mode, GLuint count)
+{
+	if (count == 0) count = this->indices;
+	this->use_vertex_array();
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->index_buffer);
+	glDrawElements(draw_mode, count, GL_UNSIGNED_INT, (void *)0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	this->restore_vertex_array();
 }
 

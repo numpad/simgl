@@ -25,6 +25,9 @@ class mesh {
 	/* opengl data */
 	GLuint vertex_buffer;
 	GLuint vertex_array;
+	GLuint index_buffer;
+	
+	GLuint indices;
 	
 	GLuint attrib_index = 0;
 	size_t attrib_stride = 0;
@@ -51,12 +54,16 @@ public:
 	void add_vertex(std::vector<GLfloat> data);
 	void load();
 	
+	/* indexing */
+	void set_indices(std::vector<GLuint> indices);
+
 	/* instancing */
 	size_t add_instance_buffer(std::vector<GLuint> layout, bool combine_data = false);
 	void update_instance_buffer(size_t instance_buffer_index, GLvoid *data, size_t count);
 
 	/* bind required data (vao, textures, ...) and call glDraw* */
 	void render(GLenum draw_mode = GL_TRIANGLES);
+	void render_indexed(GLenum draw_mode = GL_TRIANGLES, GLuint count = 0);
 	void render_instanced(GLuint count, GLenum draw_mode = GL_TRIANGLES);
 
 };
