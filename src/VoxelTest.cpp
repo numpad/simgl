@@ -45,6 +45,21 @@ public:
 	}
 };
 
+void generate_grid(sgl::mesh &mesh, GLuint count, GLfloat radius = 1.0f) {
+	std::vector<GLuint> indices;
+
+	for (GLuint z = 0; z < count; ++z) {
+		for (GLuint x = 0; x < count; ++x) {
+			GLuint vID = x + z * count;
+			mesh.add_vertex({(x / (float)count) * radius - radius * 0.5f, 0.0f, (z / (float)count) * radius - radius * 0.5f, 0.0f, 1.0f, 0.0f});
+			if (z < count - 1 && x < count - 1) {
+				indices.insert(indices.end(), {vID, vID + 1, vID + count, vID + 1, vID + 1 + count, vID + count});
+			}
+		}
+	}
+	mesh.set_indices(indices);
+	mesh.load();
+}
 
 int main(int argc, char *argv[]) {
 	sgl::window_context wctx;
@@ -53,75 +68,14 @@ int main(int argc, char *argv[]) {
 	
 	window.on_resize([](sgl::window &, int w, int h) { glViewport(0, 0, w, h); });
 	
-	sgl::mesh mesh("assets/cube.obj", {3, 3, 2});
-	
-	sgl::shader shader;
-	shader.load_from_memory(R"(
-		#version 330 core
-		
-		uniform vec3 LightDir;
-		uniform vec3 mColor;
-		uniform mat4 mModel;
-		uniform mat4 mView;
-		uniform mat4 mProjection;
-
-		layout (location = 0) in vec3 vPos;
-		layout (location = 1) in vec3 vNorm;
-		layout (location = 2) in vec2 vTexCoord;
-
-		out vec4 Color;
-
-		void main() {
-			vec3 normal = normalize(transpose(inverse(mat3(mModel))) * vNorm);
-			float light = dot(normal, normalize(LightDir));
-
-			Color = vec4(vec3(max(light, 0.1125) * mColor), 1.0);
-			gl_Position = mProjection * mView * mModel * vec4(vPos, 1.0);
-		}
-	)", sgl::shader::VERTEX);
-
-	shader.load_from_memory(R"(
-		#version 330 core
-		
-		in vec4 Color;
-		out vec4 FragColor;
-		
-		void main() {
-			FragColor = Color;
-		}
-	)", sgl::shader::FRAGMENT);
-
-	shader.compile(sgl::shader::VERTEX);
-	shader.compile(sgl::shader::FRAGMENT);
-	shader.link();
-	
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::rotate(model, glm::radians(35.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.05f));
 	
-	shader["LightDir"] = glm::vec3(0.2f, -1.0f, -0.2f);
-	
-	std::vector<Cube> cubes;
-	
-	float r = 8.0f;
-	for (float x = -r; x <= r; ++x) {
-		for (float y = -r; y <= r; ++y) {
-			for (float z = -r; z <= r; ++z) {
-				float sq = sqrt(x*x + y*y + z*z);
-				if (sq >= r - 0.75f && sq < r)
-					cubes.push_back(Cube(x, y, z));
-			}
-		}
-	}
-	
 	sgl::mesh water_mesh(std::vector<GLuint>{3, 3});
-	water_mesh.add_vertex({-1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 0.0f});
-	water_mesh.add_vertex({ 0.0f,  0.0f,  1.0f, 0.0f, 1.0f, 0.0f});
-	water_mesh.add_vertex({ 0.0f,  0.0f, -1.0f, 0.0f, 1.0f, 0.0f});
-	water_mesh.add_vertex({ 1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 0.0f});
-	water_mesh.load();
-	
+	generate_grid(water_mesh, 256, 4.0f);
+
 	sgl::shader water_shader;
 	water_shader.load_from_memory(R"(
 		#version 330 core
@@ -130,19 +84,89 @@ int main(int argc, char *argv[]) {
 		uniform mat4 mView;
 		uniform mat4 mProj;
 		uniform vec3 mColor;
+		uniform float mTime;
 		
+		uniform float uWaveHeight;
+		uniform float uWaveMult;
+		uniform float uTimeMult;
+
 		layout (location = 0) in vec3 vPos;
 		layout (location = 1) in vec3 vNorm;
 		
-		out vec3 fColor;
+		out VS_OUT {
+			vec3 Color;
+			vec3 Normal;
+		} vs_out;
+
+		vec2 grid_coords(int side_vertices, float radius) {
+			vec2 p;
+			p.x = float(gl_VertexID % side_vertices);
+			p.y = float(gl_VertexID / side_vertices);
+			return (p / float(side_vertices - 1.0)) * radius - radius * 0.5;
+		}
 		
 		void main() {
-			//vec3 normal = normalize(transpose(inverse(mat3(mModel))) * vNorm);
-			fColor = vec3(0.375, 0.35, 0.75);
-			gl_Position = mProj * mView * mModel * vec4(vPos, 1.0);
+			vec3 normal = normalize(transpose(inverse(mat3(mModel))) * vNorm);
+			float light = max(dot(normal, vec3(0.0, 1.0, 0.0)), 0.1);
+
+			vec3 pos = vec3(vPos.x, vPos.y, vPos.z);
+			vec2 coords = grid_coords(256, 4.0);
+			
+			float time = mTime * uTimeMult;
+			pos.y = sin(time + coords.y * uWaveMult) * uWaveHeight
+			      + cos(time + coords.x * uWaveMult) * uWaveHeight;
+
+			vs_out.Color = vec3(0.35, 0.375, 0.75) * light;
+			vs_out.Normal = normal;
+			gl_Position = mProj * mView * mModel * vec4(pos, 1.0);
 		}
 	)", sgl::shader::VERTEX);
 	
+	water_shader.load_from_memory(R"(
+		#version 330 core
+		
+		uniform mat4 mModel;
+
+		layout (triangles) in;
+		layout (triangle_strip, max_vertices = 3) out;
+
+		in VS_OUT {
+			vec3 Color;
+			vec3 Normal;
+		} gs_in[];
+
+		out vec3 fColor;
+		
+		vec3 combined_color() {
+			return mix(mix(gs_in[0].Color, gs_in[1].Color, 0.5), gs_in[2].Color, 0.5);
+		}
+		
+		vec3 normal() {
+			vec3 A = gl_in[0].gl_Position.xyz,
+			     B = gl_in[1].gl_Position.xyz,
+				 C = gl_in[2].gl_Position.xyz;
+
+			vec3 ba = A - B;
+			vec3 bc = C - B;
+
+			return normalize(cross(ba, bc));
+		}
+
+		void main() {
+			vec3 n = normal();
+			float light = max(1.0 - dot(-n, vec3(0.0, 1.0, 0.0)), 0.25);
+			fColor = combined_color() * light;
+			
+			for (int i = 0; i < 3; ++i) {
+				gl_Position = gl_in[i].gl_Position;
+				EmitVertex();
+			}
+
+			EndPrimitive();
+		}
+
+	)", sgl::shader::GEOMETRY);
+
 	water_shader.load_from_memory(R"(
 		#version 330 core
 		
@@ -155,48 +179,65 @@ int main(int argc, char *argv[]) {
 
 	)", sgl::shader::FRAGMENT);
 	water_shader.compile(sgl::shader::VERTEX);
+	water_shader.compile(sgl::shader::GEOMETRY);
 	water_shader.compile(sgl::shader::FRAGMENT);
 	water_shader.link();
+	
 
 	glm::mat4 mView(1.0f);
-	mView = glm::rotate(mView, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	mView = glm::translate(mView, glm::vec3(0.0f, -1.5f, -5.0f));
+	mView = glm::rotate(mView, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	mView = glm::translate(mView, glm::vec3(0.0f, -2.5f, -5.0f));
+	
+	ImGui::StyleColorsLight();
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	window.on_update([&](sgl::window &) {
 		glClearColor(0.6f, 0.3f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		if (sgl::input::get_key(GLFW_KEY_SPACE))
-			mView = glm::rotate(mView, glm::radians(3.25f), glm::vec3(0.0f, 1.0f, 0.0f));
+		/* imgui */
+		static float uWaveHeight = 0.05f,
+		             uWaveMult   = 8.5f,
+					 uTimeMult   = 1.5f;
+		ImGui::Begin("Water");
+			ImGui::DragFloat("Wave Height", &uWaveHeight, 0.0025f);
+			ImGui::DragFloat("Wave Mult", &uWaveMult, 0.25f);
+			ImGui::DragFloat("Time Mult", &uTimeMult, 0.01f);
+		ImGui::End();
 
+		/* input */
+		static float lx = 0.0f, ly = 0.0f;
+		float mx, my;
+		sgl::input::get_mouse(mx, my);
+		float dx = lx - mx, dy = ly - my;
+		if (sgl::input::get_button(GLFW_MOUSE_BUTTON_LEFT))
+			mView = glm::rotate(mView, glm::radians(dx * -0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+		lx = mx;
+		ly = my;
+		/* update */
 		float aspect = (float)window.width / (float)window.height;
 		glm::mat4 mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
 		//glm::mat4 mProj = glm::perspective(window.width / (float)window.height, glm::radians(45.0f), 0.1f, 100.0f);
-		shader["mProjection"] = mProj;
-		shader["mView"] = mView;
 		
-		/* cubes */
-		/*
-		shader.use();
-		for (auto &cube : cubes) {
-			glm::mat4 cmodel = glm::translate(model, cube.pos * 2.0f);
-			shader["mModel"] = cmodel;
-			shader["mColor"] = cube.color;
-			mesh.render();
-		}
-		*/
 
 		/* water */
 		static glm::mat4 mModel(1.0f);
-
+		
 		water_shader["mView"] = mView;
 		water_shader["mProj"] = mProj;
 		water_shader["mModel"] = mModel;
 		water_shader["mColor"] = glm::vec3(0.0f, 0.0f, 1.0f);
+		water_shader["mTime"] = (float)glfwGetTime();
+		water_shader["uWaveHeight"] = uWaveHeight;
+		water_shader["uWaveMult"] = uWaveMult;
+		water_shader["uTimeMult"] = uTimeMult;
 
 		water_shader.use();
-		water_mesh.render(GL_TRIANGLE_STRIP);
+		glLineWidth(2.0f);
+		water_mesh.render_indexed();
+
+
 	});
 
 	return 0;
