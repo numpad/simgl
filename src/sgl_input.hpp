@@ -28,6 +28,13 @@ namespace sgl {
 		static void set_mouse(float x, float y);
 		
 		/**
+		 * @brief Check if the mouse button is pressed.
+		 * 
+		 * @param btn GLFW Mouse button.
+		 */
+		static bool get_button(int btn);
+
+		/**
 		 * @brief Check if the key is pressed.
 		 * 
 		 * @param key GLFW Keycode.
