@@ -53,7 +53,10 @@ void generate_grid(sgl::mesh &mesh, GLuint count, GLfloat radius = 1.0f) {
 			GLuint vID = x + z * count;
 			mesh.add_vertex({(x / (float)count) * radius - radius * 0.5f, 0.0f, (z / (float)count) * radius - radius * 0.5f, 0.0f, 1.0f, 0.0f});
 			if (z < count - 1 && x < count - 1) {
-				indices.insert(indices.end(), {vID, vID + 1, vID + count, vID + 1, vID + 1 + count, vID + count});
+				indices.insert(indices.end(), {
+					vID    , vID + 1        , vID + count,
+					vID + 1, vID + 1 + count, vID + count
+				});
 			}
 		}
 	}
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]) {
 	model = glm::scale(model, glm::vec3(0.05f));
 	
 	sgl::mesh water_mesh(std::vector<GLuint>{3, 3});
-	generate_grid(water_mesh, 256, 4.0f);
+	generate_grid(water_mesh, 16, 2.0f);
 
 	sgl::shader water_shader;
 	water_shader.load_from_memory(R"(
@@ -89,14 +92,35 @@ int main(int argc, char *argv[]) {
 		uniform float uWaveHeight;
 		uniform float uWaveMult;
 		uniform float uTimeMult;
-
+	
 		layout (location = 0) in vec3 vPos;
 		layout (location = 1) in vec3 vNorm;
 		
 		out VS_OUT {
 			vec3 Color;
 			vec3 Normal;
+			float height;
 		} vs_out;
+		
+		float hash(float n) { return fract(sin(n) * 1e4); }
+		float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
+		
+		
+		float noise(vec2 x) {
+			vec2 i = floor(x);
+			vec2 f = fract(x);
+
+			// Four corners in 2D of a tile
+			float a = hash(i);
+			float b = hash(i + vec2(1.0, 0.0));
+			float c = hash(i + vec2(0.0, 1.0));
+			float d = hash(i + vec2(1.0, 1.0));
+
+			// Same code, with the clamps in smoothstep and common subexpressions
+			// optimized away.
+			vec2 u = f * f * (3.0 - 2.0 * f);
+			return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+		}
 
 		vec2 grid_coords(int side_vertices, float radius) {
 			vec2 p;
@@ -110,14 +134,17 @@ int main(int argc, char *argv[]) {
 			float light = max(dot(normal, vec3(0.0, 1.0, 0.0)), 0.1);
 
 			vec3 pos = vec3(vPos.x, vPos.y, vPos.z);
-			vec2 coords = grid_coords(256, 4.0);
-			
-			float time = mTime * uTimeMult;
-			pos.y = sin(time + coords.y * uWaveMult) * uWaveHeight
-			      + cos(time + coords.x * uWaveMult) * uWaveHeight;
+			vec2 coords = grid_coords(16, 2.0);
+			float d = length(coords);
 
+			float time = mTime * uTimeMult;
+
+			pos.y = sin(3.5 * cos(time - coords.y) + coords.x * 3.5 * uWaveMult) * uWaveHeight
+				  + cos(3.5 * sin(time + coords.x) + coords.y * 3.5 * uWaveMult) * uWaveHeight;
+			
 			vs_out.Color = vec3(0.35, 0.375, 0.75) * light;
 			vs_out.Normal = normal;
+			vs_out.height = pos.y / uWaveHeight;
 			gl_Position = mProj * mView * mModel * vec4(pos, 1.0);
 		}
 	)", sgl::shader::VERTEX);
@@ -133,10 +160,12 @@ int main(int argc, char *argv[]) {
 		in VS_OUT {
 			vec3 Color;
 			vec3 Normal;
+			float height;
 		} gs_in[];
 
 		out vec3 fColor;
-		
+		out float height;
+
 		vec3 combined_color() {
 			return mix(mix(gs_in[0].Color, gs_in[1].Color, 0.5), gs_in[2].Color, 0.5);
 		}
@@ -155,14 +184,17 @@ int main(int argc, char *argv[]) {
 		void main() {
 			vec3 n = normal();
 			float light = max(1.0 - dot(-n, vec3(0.0, 1.0, 0.0)), 0.25);
+			
 			fColor = combined_color() * light;
 			
 			for (int i = 0; i < 3; ++i) {
 				gl_Position = gl_in[i].gl_Position;
+				height = gs_in[i].height;
 				EmitVertex();
 			}
 
 			EndPrimitive();
+			
 		}
 
 	)", sgl::shader::GEOMETRY);
@@ -170,11 +202,38 @@ int main(int argc, char *argv[]) {
 	water_shader.load_from_memory(R"(
 		#version 330 core
 		
+		uniform vec2 uFoamRange;
+
 		in vec3 fColor;
+		in float height;
 		out vec4 FragColor;
+	
+		float hash(float n) { return fract(sin(n) * 1e4); }
+		float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
+		
+		
+		float noise(vec2 x) {
+			vec2 i = floor(x);
+			vec2 f = fract(x);
+
+			// Four corners in 2D of a tile
+			float a = hash(i);
+			float b = hash(i + vec2(1.0, 0.0));
+			float c = hash(i + vec2(0.0, 1.0));
+			float d = hash(i + vec2(1.0, 1.0));
+
+			// Same code, with the clamps in smoothstep and common subexpressions
+			// optimized away.
+			vec2 u = f * f * (3.0 - 2.0 * f);
+			return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+		}
+
 
 		void main() {
-			FragColor = vec4(fColor, 1.0);
+			vec3 foam = vec3(1.0);
+			float foam_percent = 0.0;
+			
+			FragColor = vec4(mix(fColor, foam, foam_percent), 1.0);
 		}
 
 	)", sgl::shader::FRAGMENT);
@@ -197,12 +256,13 @@ int main(int argc, char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		/* imgui */
-		static float uWaveHeight = 0.05f,
-		             uWaveMult   = 8.5f,
-					 uTimeMult   = 1.5f;
+		static float uWaveHeight  = 0.013f,
+		             uWaveMult    = 2.25f,
+					 uTimeMult    = 1.5f;
+		static float uFoamRange[] = {0.75f, 0.925f};
 		ImGui::Begin("Water");
-			ImGui::DragFloat("Wave Height", &uWaveHeight, 0.0025f);
-			ImGui::DragFloat("Wave Mult", &uWaveMult, 0.25f);
+			ImGui::DragFloat("Wave Height", &uWaveHeight, 0.0025f, 0.00000001f);
+			ImGui::DragFloat("Wave Repeat", &uWaveMult, 0.25f);
 			ImGui::DragFloat("Time Mult", &uTimeMult, 0.01f);
 		ImGui::End();
 
@@ -211,8 +271,9 @@ int main(int argc, char *argv[]) {
 		float mx, my;
 		sgl::input::get_mouse(mx, my);
 		float dx = lx - mx, dy = ly - my;
-		if (sgl::input::get_button(GLFW_MOUSE_BUTTON_LEFT))
+		if (sgl::input::get_button(GLFW_MOUSE_BUTTON_LEFT)) {
 			mView = glm::rotate(mView, glm::radians(dx * -0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
 		lx = mx;
 		ly = my;
 		/* update */
@@ -232,9 +293,10 @@ int main(int argc, char *argv[]) {
 		water_shader["uWaveHeight"] = uWaveHeight;
 		water_shader["uWaveMult"] = uWaveMult;
 		water_shader["uTimeMult"] = uTimeMult;
+		water_shader["uFoamRange"] = glm::vec2(uFoamRange[0], uFoamRange[1]);
+		
 
 		water_shader.use();
-		glLineWidth(2.0f);
 		water_mesh.render_indexed();
 
 
