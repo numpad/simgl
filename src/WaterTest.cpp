@@ -28,21 +28,75 @@ struct Static_
 class Cube {
 
 public:
-	glm::vec3 pos;
-	glm::vec3 color;
+	glm::mat4 *projection;
 
-	Cube(int x, int y, int z) {
-		this->pos = glm::vec3((float)x, (float)y, (float)z);
-		this->color = glm::vec3(1.0f);
+	sgl::shader s;
+	sgl::mesh m;
+
+	Cube(glm::mat4 *projection) : m(std::vector<GLuint>{3, 3, 2}) {
+		this->projection = projection;
+
+		s.load_from_memory(R"(
+			#version 330 core
+			
+			uniform mat4 uModel;
+			uniform mat4 uView;
+			uniform mat4 uProjection;
+			uniform vec3 uColor;
+			
+			layout (location = 0) in vec3 vPosition;
+			layout (location = 1) in vec3 vNormal;
+
+			out vec3 fNormal;
+			out vec2 fTexCoord;
+			
+			void main() {
+				fNormal = normalize(transpose(inverse(mat3(uModel))) * vNormal);
+				gl_Position = uProjection * uView * uModel * vec4(vPosition, 1.0);
+			}
+		)", sgl::shader::VERTEX);
+
+		s.load_from_memory(R"(
+			#version 330 core
+			
+			uniform vec3 uColor;
+
+			in vec3 fNormal;
+			out vec4 Color;
+
+			void main() {
+				Color = vec4(uColor, 1.0);
+			}
+			
+		)", sgl::shader::FRAGMENT);
+
+		s.compile(sgl::shader::VERTEX);
+		s.compile(sgl::shader::FRAGMENT);
+		s.link();
+
+		glm::mat4 mView(1.0f);
+		mView = glm::rotate(mView, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		mView = glm::translate(mView, glm::vec3(0.0f, -2.5f, -5.0f));
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(35.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.05f));
+
+		s["uModel"] = model;
+		s["uView"] = mView;
+		s["uProjection"] = *projection;
+		s["uColor"] = glm::vec3(1.0f, 0.0f, 0.0f);
+
+		m.load("assets/cube.obj");
+	}
+	
+	void render() {
+		s.use();
+		s["uProjection"] = *projection;
+		m.render();
 	}
 
-	Cube *set_color(float r, float g, float b) {
-		this->color.r = r;
-		this->color.g = g;
-		this->color.b = b;
-
-		return this;
-	}
 };
 
 void generate_grid(sgl::mesh &mesh, GLuint count, GLfloat radius = 1.0f) {
@@ -51,7 +105,18 @@ void generate_grid(sgl::mesh &mesh, GLuint count, GLfloat radius = 1.0f) {
 	for (GLuint z = 0; z < count; ++z) {
 		for (GLuint x = 0; x < count; ++x) {
 			GLuint vID = x + z * count;
-			mesh.add_vertex({(x / (float)count) * radius - radius * 0.5f, 0.0f, (z / (float)count) * radius - radius * 0.5f, 0.0f, 1.0f, 0.0f});
+			mesh.add_vertex({
+				/* position */
+				(x / (float)count) * radius - radius * 0.5f,
+				0.0f,
+				(z / (float)count) * radius - radius * 0.5f,
+				/* normal */
+				0.0f, 1.0f, 0.0f,
+				/* texcoord */
+				(x / (float)count),
+				(z / (float)count)
+			});
+
 			if (z < count - 1 && x < count - 1) {
 				indices.insert(indices.end(), {
 					vID    , vID + 1        , vID + count,
@@ -76,8 +141,10 @@ int main(int argc, char *argv[]) {
 	model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.05f));
 	
-	sgl::mesh water_mesh(std::vector<GLuint>{3, 3});
+	sgl::mesh water_mesh(std::vector<GLuint>{3, 3, 2});
 	generate_grid(water_mesh, 16, 2.0f);
+
+	sgl::texture tex("assets/monkey2.png");
 
 	sgl::shader water_shader;
 	water_shader.load_from_memory(R"(
@@ -95,10 +162,12 @@ int main(int argc, char *argv[]) {
 	
 		layout (location = 0) in vec3 vPos;
 		layout (location = 1) in vec3 vNorm;
+		layout (location = 2) in vec2 vTexCoord;
 		
 		out VS_OUT {
 			vec3 Color;
 			vec3 Normal;
+			vec2 TexCoord;
 			float height;
 		} vs_out;
 		
@@ -144,6 +213,7 @@ int main(int argc, char *argv[]) {
 			
 			vs_out.Color = vec3(0.35, 0.375, 0.75) * light;
 			vs_out.Normal = normal;
+			vs_out.TexCoord = vTexCoord;
 			vs_out.height = pos.y / uWaveHeight;
 			gl_Position = mProj * mView * mModel * vec4(pos, 1.0);
 		}
@@ -160,10 +230,12 @@ int main(int argc, char *argv[]) {
 		in VS_OUT {
 			vec3 Color;
 			vec3 Normal;
+			vec2 TexCoord;
 			float height;
 		} gs_in[];
 
 		out vec3 fColor;
+		out vec2 fTexCoord;
 		out float height;
 
 		vec3 combined_color() {
@@ -190,6 +262,7 @@ int main(int argc, char *argv[]) {
 			for (int i = 0; i < 3; ++i) {
 				gl_Position = gl_in[i].gl_Position;
 				height = gs_in[i].height;
+				fTexCoord = gs_in[i].TexCoord;;
 				EmitVertex();
 			}
 
@@ -203,8 +276,10 @@ int main(int argc, char *argv[]) {
 		#version 330 core
 		
 		uniform vec2 uFoamRange;
+		uniform sampler2D tex;		
 
 		in vec3 fColor;
+		in vec2 fTexCoord;
 		in float height;
 		out vec4 FragColor;
 	
@@ -233,7 +308,8 @@ int main(int argc, char *argv[]) {
 			vec3 foam = vec3(1.0);
 			float foam_percent = 0.0;
 			
-			FragColor = vec4(mix(fColor, foam, foam_percent), 1.0);
+			//FragColor = vec4(mix(fColor, foam, foam_percent), 1.0);
+			FragColor = texture(tex, fTexCoord);
 		}
 
 	)", sgl::shader::FRAGMENT);
@@ -241,12 +317,16 @@ int main(int argc, char *argv[]) {
 	water_shader.compile(sgl::shader::GEOMETRY);
 	water_shader.compile(sgl::shader::FRAGMENT);
 	water_shader.link();
-	
 
 	glm::mat4 mView(1.0f);
 	mView = glm::rotate(mView, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	mView = glm::translate(mView, glm::vec3(0.0f, -2.5f, -5.0f));
 	
+	float aspect = (float)window.width / (float)window.height;
+	glm::mat4 mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
+
+	Cube c(&mProj);
+
 	ImGui::StyleColorsLight();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -277,14 +357,15 @@ int main(int argc, char *argv[]) {
 		lx = mx;
 		ly = my;
 		/* update */
-		float aspect = (float)window.width / (float)window.height;
-		glm::mat4 mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
+		aspect = (float)window.width / (float)window.height;
+		mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
 		//glm::mat4 mProj = glm::perspective(window.width / (float)window.height, glm::radians(45.0f), 0.1f, 100.0f);
 		
 
 		/* water */
 		static glm::mat4 mModel(1.0f);
-		
+
+		water_shader["tex"] = 0;
 		water_shader["mView"] = mView;
 		water_shader["mProj"] = mProj;
 		water_shader["mModel"] = mModel;
@@ -295,8 +376,10 @@ int main(int argc, char *argv[]) {
 		water_shader["uTimeMult"] = uTimeMult;
 		water_shader["uFoamRange"] = glm::vec2(uFoamRange[0], uFoamRange[1]);
 		
+		c.render();
 
 		water_shader.use();
+		tex.bind(0);
 		water_mesh.render_indexed();
 
 
