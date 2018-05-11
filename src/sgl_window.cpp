@@ -128,6 +128,11 @@ sgl::window::~window()
 	glfwTerminate();
 }
 
+sgl::window::operator GLFWwindow*() const
+{
+	return glfw_window;
+}
+
 std::string sgl::window::get_title()
 {
 	return this->_title;

@@ -73,6 +73,12 @@ namespace sgl {
 		window(sgl::window_context wctx = sgl::window_context());
 		~window();
 		
+		/**
+		 * @brief Return a pointer to the wrapped GLFW window.
+		 * @return GLFWwindow*
+		 */
+		operator GLFWwindow*() const;
+
 		/* window properties */
 		/**
 		 * @brief Get the title of this window.
