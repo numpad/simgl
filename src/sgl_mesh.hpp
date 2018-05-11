@@ -42,8 +42,31 @@ class mesh {
 public:
 	
 	GLuint get_vertex_array();
-
+	
+	/**
+	 * @brief Create an empty mesh.
+	 * 
+	 * Creates an empty mesh object, which still needs to be loaded before it
+	 * can be rendered. The layout defines the vertex shader inputs, the
+	 * default of {3, 3, 2} is mostly used as vec3 position, vec3 normal and
+	 * vec2 texcoord.
+	 *
+	 * @code{.cpp}
+	 *     #include <sgl_mesh.hpp>
+	 *     
+	 *     // Create a mesh, and define two vec3 inputs, position and color.
+	 *     sgl::mesh cube_mesh(std::vector<GLuint>({3, 3}));
+	 *     
+	 * @endcode
+	 */
 	mesh(std::vector<GLuint> layout = {3, 3, 2});
+	/**
+	 * @brief Load a mesh from a wavefront object file.
+	 * 
+	 * Creates and loads a mesh from a simplified wavefront .obj file
+	 * 
+	 * @see sgl::mesh::load
+	 */
 	mesh(std::string obj_path, std::vector<GLuint> layout = {3, 3, 2});
 	~mesh();
 	

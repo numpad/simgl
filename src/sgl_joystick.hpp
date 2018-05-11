@@ -33,7 +33,11 @@ public:
 	/* return human-readable name of joystick */
 	std::string get_name();
 	
-	/* check if joystick is connected */
+	/**
+	 * @brief Check if this joystick is connected.
+	 *
+	 * @return true if connected.
+	 */
 	bool is_connected();
 	
 	/* axes */
@@ -42,7 +46,26 @@ public:
 	int get_axes_count();
 	
 	/* buttons */
+	/**
+	 * @brief Check if button is pressed.
+	 * 
+	 * @param index Index of the button.
+	 * @return truthy value if button at `index` is pressed
+	 * 
+	 * @see sgl::joystick::get_button_count()
+	 */
 	unsigned char get_button(int index);
+
+	/**
+	 * @brief Get the amount of buttons.
+	 *
+	 * Buttons on the available joystick are enumerated
+	 * in the range [0, ::get_button_count()).
+	 * 
+	 * @return Amount of buttons.
+	 *
+	 * @see sgl::joystick::get_button()
+	 */
 	int get_button_count();
 };
 
