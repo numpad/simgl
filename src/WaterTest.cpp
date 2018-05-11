@@ -12,6 +12,7 @@
 #include "sgl_mesh.hpp"
 #include "sgl_shader.hpp"
 #include "sgl_input.hpp"
+#include "sgl_framebuffer.hpp"
 
 #define CONCATE_(X,Y) X##Y
 #define CONCATE(X,Y) CONCATE_(X,Y)
@@ -28,13 +29,16 @@ struct Static_
 class Cube {
 
 public:
-	glm::mat4 *projection;
+	glm::mat4 model;
+	
+	float scale, rotspeed;
 
 	sgl::shader s;
 	sgl::mesh m;
 
-	Cube(glm::mat4 *projection) : m(std::vector<GLuint>{3, 3, 2}) {
-		this->projection = projection;
+	Cube() : m(std::vector<GLuint>{3, 3, 2}) {
+		this->scale = 0.5f;
+		this->rotspeed = 0.5f;
 
 		s.load_from_memory(R"(
 			#version 330 core
@@ -47,11 +51,13 @@ public:
 			layout (location = 0) in vec3 vPosition;
 			layout (location = 1) in vec3 vNormal;
 
+			out float fLight;
 			out vec3 fNormal;
 			out vec2 fTexCoord;
 			
 			void main() {
 				fNormal = normalize(transpose(inverse(mat3(uModel))) * vNormal);
+				fLight = max(dot(fNormal, vec3(0.0, -1.0, 0.5)), 0.33);
 				gl_Position = uProjection * uView * uModel * vec4(vPosition, 1.0);
 			}
 		)", sgl::shader::VERTEX);
@@ -60,12 +66,13 @@ public:
 			#version 330 core
 			
 			uniform vec3 uColor;
-
+			
+			in float fLight;
 			in vec3 fNormal;
 			out vec4 Color;
 
 			void main() {
-				Color = vec4(uColor, 1.0);
+				Color = vec4(normalize(uColor) * fLight, 1.0);
 			}
 			
 		)", sgl::shader::FRAGMENT);
@@ -73,27 +80,28 @@ public:
 		s.compile(sgl::shader::VERTEX);
 		s.compile(sgl::shader::FRAGMENT);
 		s.link();
+		
+		glm::mat4 mProj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -20.0f, 20.0f);
 
-		glm::mat4 mView(1.0f);
-		mView = glm::rotate(mView, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		mView = glm::translate(mView, glm::vec3(0.0f, -2.5f, -5.0f));
+		glm::mat4 mView = glm::lookAt(
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f)
+		);
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, glm::radians(35.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.05f));
+		model = glm::mat4(1.0f);
 
-		s["uModel"] = model;
 		s["uView"] = mView;
-		s["uProjection"] = *projection;
-		s["uColor"] = glm::vec3(1.0f, 0.0f, 0.0f);
+		s["uProjection"] = mProj;
+		s["uColor"] = glm::vec3(0.8f);
 
 		m.load("assets/cube.obj");
 	}
 	
 	void render() {
+		model = glm::rotate(model, glm::radians(rotspeed), glm::vec3(0.2f, 0.8f, -0.64f));
 		s.use();
-		s["uProjection"] = *projection;
+		s["uModel"] = glm::scale(model, glm::vec3(this->scale));
 		m.render();
 	}
 
@@ -113,8 +121,8 @@ void generate_grid(sgl::mesh &mesh, GLuint count, GLfloat radius = 1.0f) {
 				/* normal */
 				0.0f, 1.0f, 0.0f,
 				/* texcoord */
-				(x / (float)count),
-				(z / (float)count)
+				(x / (float)(count - 1)),
+				1.0f - (z / (float)(count - 1))
 			});
 
 			if (z < count - 1 && x < count - 1) {
@@ -142,9 +150,8 @@ int main(int argc, char *argv[]) {
 	model = glm::scale(model, glm::vec3(0.05f));
 	
 	sgl::mesh water_mesh(std::vector<GLuint>{3, 3, 2});
-	generate_grid(water_mesh, 16, 2.0f);
+	generate_grid(water_mesh, 64, 2.0f);
 
-	sgl::texture tex("assets/monkey2.png");
 
 	sgl::shader water_shader;
 	water_shader.load_from_memory(R"(
@@ -203,7 +210,7 @@ int main(int argc, char *argv[]) {
 			float light = max(dot(normal, vec3(0.0, 1.0, 0.0)), 0.1);
 
 			vec3 pos = vec3(vPos.x, vPos.y, vPos.z);
-			vec2 coords = grid_coords(16, 2.0);
+			vec2 coords = grid_coords(64, 2.0);
 			float d = length(coords);
 
 			float time = mTime * uTimeMult;
@@ -211,7 +218,7 @@ int main(int argc, char *argv[]) {
 			pos.y = sin(3.5 * cos(time - coords.y) + coords.x * 3.5 * uWaveMult) * uWaveHeight
 				  + cos(3.5 * sin(time + coords.x) + coords.y * 3.5 * uWaveMult) * uWaveHeight;
 			
-			vs_out.Color = vec3(0.35, 0.375, 0.75) * light;
+			vs_out.Color = mColor * light;
 			vs_out.Normal = normal;
 			vs_out.TexCoord = vTexCoord;
 			vs_out.height = pos.y / uWaveHeight;
@@ -309,7 +316,7 @@ int main(int argc, char *argv[]) {
 			float foam_percent = 0.0;
 			
 			//FragColor = vec4(mix(fColor, foam, foam_percent), 1.0);
-			FragColor = texture(tex, fTexCoord);
+			FragColor = mix(texture(tex, fTexCoord), vec4(fColor, 1.0), 0.5);
 		}
 
 	)", sgl::shader::FRAGMENT);
@@ -325,25 +332,29 @@ int main(int argc, char *argv[]) {
 	float aspect = (float)window.width / (float)window.height;
 	glm::mat4 mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
 
-	Cube c(&mProj);
+	sgl::framebuffer flag_buffer(1024, 1024);
+	Cube c;
 
 	ImGui::StyleColorsLight();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	window.on_update([&](sgl::window &) {
-		glClearColor(0.6f, 0.3f, 0.4f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
 		/* imgui */
 		static float uWaveHeight  = 0.013f,
 		             uWaveMult    = 2.25f,
 					 uTimeMult    = 1.5f;
 		static float uFoamRange[] = {0.75f, 0.925f};
+		bool allow_rot = true;
 		ImGui::Begin("Water");
-			ImGui::DragFloat("Wave Height", &uWaveHeight, 0.0025f, 0.00000001f);
-			ImGui::DragFloat("Wave Repeat", &uWaveMult, 0.25f);
-			ImGui::DragFloat("Time Mult", &uTimeMult, 0.01f);
+			allow_rot = ImGui::DragFloat("Wave Height", &uWaveHeight, 0.0025f, 0.00000001f) || allow_rot;
+			allow_rot = ImGui::DragFloat("Wave Repeat", &uWaveMult, 0.25f) || allow_rot;
+			allow_rot = ImGui::DragFloat("Time Mult", &uTimeMult, 0.01f) || allow_rot;
+		ImGui::End();
+		
+		ImGui::Begin("Framebuffer Cube");
+			allow_rot = ImGui::DragFloat("Scale", &c.scale, 0.0025f, 0.025f, 1.0f) || allow_rot;
+			allow_rot = ImGui::DragFloat("Rotation", &c.rotspeed, 0.05f, 0.0f, 5.0f) || allow_rot;
 		ImGui::End();
 
 		/* input */
@@ -351,7 +362,7 @@ int main(int argc, char *argv[]) {
 		float mx, my;
 		sgl::input::get_mouse(mx, my);
 		float dx = lx - mx, dy = ly - my;
-		if (sgl::input::get_button(GLFW_MOUSE_BUTTON_LEFT)) {
+		if (allow_rot && sgl::input::get_button(GLFW_MOUSE_BUTTON_LEFT)) {
 			mView = glm::rotate(mView, glm::radians(dx * -0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		lx = mx;
@@ -369,19 +380,26 @@ int main(int argc, char *argv[]) {
 		water_shader["mView"] = mView;
 		water_shader["mProj"] = mProj;
 		water_shader["mModel"] = mModel;
-		water_shader["mColor"] = glm::vec3(0.0f, 0.0f, 1.0f);
+		water_shader["mColor"] = glm::vec3(1.0f);
 		water_shader["mTime"] = (float)glfwGetTime();
 		water_shader["uWaveHeight"] = uWaveHeight;
 		water_shader["uWaveMult"] = uWaveMult;
 		water_shader["uTimeMult"] = uTimeMult;
 		water_shader["uFoamRange"] = glm::vec2(uFoamRange[0], uFoamRange[1]);
 		
+		flag_buffer.bind();
+		glClearColor(1.0f, 1.0f, 0.9f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		c.render();
-
+		flag_buffer.unbind();
+		
+		glClearColor(0.6f, 0.3f, 0.4f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		water_shader.use();
-		tex.bind(0);
+		glBindTexture(GL_TEXTURE_2D, flag_buffer);
 		water_mesh.render_indexed();
-
+		
 
 	});
 
