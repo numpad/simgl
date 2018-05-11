@@ -1,5 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <string>
+
+#include <stdio.h>
 
 #include <GL/gl3w.h>
 
@@ -13,6 +16,18 @@
 #include "sgl_shader.hpp"
 #include "sgl_input.hpp"
 #include "sgl_framebuffer.hpp"
+
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_STANDARD_VARARGS
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_IMPLEMENTATION
+#define NK_GLFW_GL3_IMPLEMENTATION
+#include <nuklear/nuklear.h>
+#include <nuklear/nuklear_impl.h>
 
 #define CONCATE_(X,Y) X##Y
 #define CONCATE(X,Y) CONCATE_(X,Y)
@@ -35,10 +50,12 @@ public:
 
 	sgl::shader s;
 	sgl::mesh m;
+	glm::vec3 color;
 
 	Cube() : m(std::vector<GLuint>{3, 3, 2}) {
 		this->scale = 0.5f;
 		this->rotspeed = 0.5f;
+		this->color = glm::vec3(0.8f);
 
 		s.load_from_memory(R"(
 			#version 330 core
@@ -93,7 +110,6 @@ public:
 
 		s["uView"] = mView;
 		s["uProjection"] = mProj;
-		s["uColor"] = glm::vec3(0.8f);
 
 		m.load("assets/cube.obj");
 	}
@@ -102,6 +118,7 @@ public:
 		model = glm::rotate(model, glm::radians(rotspeed), glm::vec3(0.2f, 0.8f, -0.64f));
 		s.use();
 		s["uModel"] = glm::scale(model, glm::vec3(this->scale));
+		s["uColor"] = this->color;
 		m.render();
 	}
 
@@ -332,30 +349,65 @@ int main(int argc, char *argv[]) {
 	float aspect = (float)window.width / (float)window.height;
 	glm::mat4 mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
 
-	sgl::framebuffer flag_buffer(1024, 1024);
+	sgl::framebuffer flag_buffer(1028, 1028);
 	Cube c;
+
+	struct nk_context *ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
+	struct nk_colorf bg;
+	struct nk_font_atlas *atlas;
+	nk_glfw3_font_stash_begin(&atlas);
+	nk_glfw3_font_stash_end();
 
 	ImGui::StyleColorsLight();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	window.on_update([&](sgl::window &) {
+		nk_glfw3_new_frame();
+
 		/* imgui */
-		static float uWaveHeight  = 0.013f,
+		static float uWaveHeight  = 0.025f,
 		             uWaveMult    = 2.25f,
 					 uTimeMult    = 1.5f;
 		static float uFoamRange[] = {0.75f, 0.925f};
 		bool allow_rot = true;
-		ImGui::Begin("Water");
-			allow_rot = ImGui::DragFloat("Wave Height", &uWaveHeight, 0.0025f, 0.00000001f) || allow_rot;
-			allow_rot = ImGui::DragFloat("Wave Repeat", &uWaveMult, 0.25f) || allow_rot;
-			allow_rot = ImGui::DragFloat("Time Mult", &uTimeMult, 0.01f) || allow_rot;
-		ImGui::End();
-		
-		ImGui::Begin("Framebuffer Cube");
-			allow_rot = ImGui::DragFloat("Scale", &c.scale, 0.0025f, 0.025f, 1.0f) || allow_rot;
-			allow_rot = ImGui::DragFloat("Rotation", &c.rotspeed, 0.05f, 0.0f, 5.0f) || allow_rot;
-		ImGui::End();
+
+		if (nk_begin(ctx, "Flag", nk_rect(10, 10, 250, 200),
+			NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
+
+			char ampl_text[128],
+				scale_text[128],
+				time_text[128];
+			sprintf(ampl_text, "Amplitude (%.3f)", uWaveHeight);
+			sprintf(scale_text, "Scale (%.3f)", uWaveMult);
+			sprintf(time_text, "Timestep (%.3f)", uTimeMult);
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, ampl_text, NK_TEXT_LEFT);
+			nk_slider_float(ctx, -0.5f, &uWaveHeight, 0.5f, 0.000125f);
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, scale_text, NK_TEXT_LEFT);
+			nk_slider_float(ctx, -25.0f, &uWaveMult, 25.0f, 0.05f);
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, time_text, NK_TEXT_LEFT);
+			nk_slider_float(ctx, 0.0f, &uTimeMult, 10.0f, 0.00005f);
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, "Cube Color", NK_TEXT_LEFT);
+			nk_layout_row_dynamic(ctx, 200, 1);
+			struct nk_colorf col;
+			col.r = c.color.x;
+			col.g = c.color.y;
+			col.b = c.color.z;
+			col.a = 1.0f;
+			col = nk_color_picker(ctx, col, NK_RGB);
+			c.color.x = col.r;
+			c.color.y = col.g;
+			c.color.z = col.b;
+		}
+		nk_end(ctx);
 
 		/* input */
 		static float lx = 0.0f, ly = 0.0f;
@@ -386,7 +438,8 @@ int main(int argc, char *argv[]) {
 		water_shader["uWaveMult"] = uWaveMult;
 		water_shader["uTimeMult"] = uTimeMult;
 		water_shader["uFoamRange"] = glm::vec2(uFoamRange[0], uFoamRange[1]);
-		
+
+		glEnable(GL_DEPTH_TEST);
 		flag_buffer.bind();
 		glClearColor(1.0f, 1.0f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -400,8 +453,10 @@ int main(int argc, char *argv[]) {
 		glBindTexture(GL_TEXTURE_2D, flag_buffer);
 		water_mesh.render_indexed();
 		
-
+		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 	});
+
+	nk_glfw3_shutdown();
 
 	return 0;
 }
