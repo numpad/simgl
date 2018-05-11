@@ -8,13 +8,16 @@ namespace sgl {
 
 	class framebuffer {
 		GLuint fbo, texture_color_att, rbo;
+		
+		GLsizei prev_viewport[4];
 
 	public:
+		GLuint width, height;
 
 		framebuffer(GLuint width, GLuint height);
 		~framebuffer();
-
-		void attach();
+		
+		operator GLuint() const;
 
 		void bind();
 		void unbind();

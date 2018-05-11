@@ -5,6 +5,9 @@ sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
 	glGenTextures(1, &this->texture_color_att);
 	glGenRenderbuffers(1, &this->rbo);
 	
+	this->width = width;
+	this->height = height;
+
 	this->bind();
 	
 	/* create texture */
@@ -31,13 +34,22 @@ sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
 
 }
 
+sgl::framebuffer::operator GLuint() const {
+	return this->texture_color_att;
+}
+
 void sgl::framebuffer::bind() {
+	glGetIntegerv(GL_VIEWPORT, this->prev_viewport);
+	glViewport(0, 0, this->width, this->height);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->fbo);
 }
 void sgl::framebuffer::unbind() {
+	glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 sgl::framebuffer::~framebuffer() {
 	glDeleteFramebuffers(1, &this->fbo);
+	glDeleteTextures(1, &this->texture_color_att);
+	glDeleteRenderbuffers(1, &this->rbo);
 }
