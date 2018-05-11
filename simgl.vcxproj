@@ -113,6 +113,8 @@
     <ClInclude Include="lib\windows\GLFW\glfw3.h" />
     <ClInclude Include="lib\windows\GLFW\glfw3native.h" />
     <ClInclude Include="src\sgl_camera.hpp" />
+    <ClInclude Include="src\sgl_framebuffer.hpp" />
+    <ClInclude Include="src\sgl_input.hpp" />
     <ClInclude Include="src\sgl_joystick.hpp" />
     <ClInclude Include="src\sgl_mesh.hpp" />
     <ClInclude Include="src\sgl_modelloader.hpp" />
@@ -143,7 +145,10 @@
     <ClCompile Include="lib\windows\imgui\imgui.cpp" />
     <ClCompile Include="lib\windows\imgui\imgui_draw.cpp" />
     <ClCompile Include="lib\windows\imgui\imgui_impl.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\sgl_camera.cpp" />
+    <ClCompile Include="src\sgl_framebuffer.cpp" />
+    <ClCompile Include="src\sgl_input.cpp" />
     <ClCompile Include="src\sgl_joystick.cpp" />
     <ClCompile Include="src\sgl_mesh.cpp" />
     <ClCompile Include="src\sgl_modelloader.cpp" />
@@ -153,7 +158,7 @@
     <ClCompile Include="src\sgl_timer.cpp" />
     <ClCompile Include="src\sgl_window.cpp" />
     <ClCompile Include="src\sgl_window_context.cpp" />
-    <ClCompile Include="WaterTest.cpp" />
+    <ClCompile Include="src\WaterTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
