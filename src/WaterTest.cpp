@@ -349,7 +349,7 @@ int main(int argc, char *argv[]) {
 	float aspect = (float)window.width / (float)window.height;
 	glm::mat4 mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
 
-	sgl::framebuffer flag_buffer(1028, 1028);
+	sgl::framebuffer flag_buffer(512, 512);
 	Cube c;
 
 	struct nk_context *ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
@@ -388,7 +388,7 @@ int main(int argc, char *argv[]) {
 
 			nk_layout_row_dynamic(ctx, 30, 1);
 			nk_label(ctx, scale_text, NK_TEXT_LEFT);
-			nk_slider_float(ctx, -25.0f, &uWaveMult, 25.0f, 0.05f);
+			nk_slider_float(ctx, -25.0f, &uWaveMult, 25.0f, 0.000005f);
 
 			nk_layout_row_dynamic(ctx, 30, 1);
 			nk_label(ctx, time_text, NK_TEXT_LEFT);
@@ -406,6 +406,10 @@ int main(int argc, char *argv[]) {
 			c.color.x = col.r;
 			c.color.y = col.g;
 			c.color.z = col.b;
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, "Cube Scale", NK_TEXT_LEFT);
+			nk_slider_float(ctx, 0.0f, &c.scale, 1.0f, 0.001f);
 		}
 		nk_end(ctx);
 
@@ -450,7 +454,7 @@ int main(int argc, char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		water_shader.use();
-		glBindTexture(GL_TEXTURE_2D, flag_buffer);
+		flag_buffer.active(0);
 		water_mesh.render_indexed();
 		
 		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
