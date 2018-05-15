@@ -48,7 +48,7 @@ void sgl::framebuffer::unbind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void sgl::framebuffer::active(GLuint index)
+void sgl::framebuffer::bind_texture(GLuint index)
 {
 	glActiveTexture(GL_TEXTURE0 + index);
 	glBindTexture(GL_TEXTURE_2D, this->texture_color_att);

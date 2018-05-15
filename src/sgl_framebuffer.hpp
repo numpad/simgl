@@ -25,7 +25,7 @@ namespace sgl {
 		void unbind();
 
 		/* activate as texture */
-		void active(GLuint index);
+		void bind_texture(GLuint index);
 
 	};
 
