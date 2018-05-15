@@ -358,8 +358,6 @@ int main(int argc, char *argv[]) {
 	nk_glfw3_font_stash_begin(&atlas);
 	nk_glfw3_font_stash_end();
 
-	ImGui::StyleColorsLight();
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	window.on_update([&](sgl::window &) {
@@ -454,7 +452,7 @@ int main(int argc, char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		water_shader.use();
-		flag_buffer.active(0);
+		flag_buffer.bind_texture(0);
 		water_mesh.render_indexed();
 		
 		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);

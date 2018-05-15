@@ -100,10 +100,6 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 		return false;
 	}
 	
-	/* initialize dear imgui */
-	ImGui::CreateContext();
-	ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
-	
 	/* initialize input */
 	sgl::input::attach(this->glfw_window);
 
@@ -122,8 +118,6 @@ sgl::window::window(sgl::window_context wctx)
 /* free resources */
 sgl::window::~window()
 {
-	ImGui_ImplGlfwGL3_Shutdown();
-	ImGui::DestroyContext();
 	/* close window */
 	glfwTerminate();
 }
@@ -221,12 +215,8 @@ void sgl::window::on_update(std::function<void (sgl::window &)> update_func)
 		
 		
 		glfwPollEvents();
-		ImGui_ImplGlfwGL3_NewFrame();
 		
 		update_func(*this);
-		
-		ImGui::Render();
-		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 		
 		glfwSwapBuffers(this->glfw_window);
 	}

@@ -88,7 +88,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;angelscriptd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +106,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;angelscript.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -136,15 +136,7 @@
     <Image Include="assets\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lib\windows\angelscript\add_on\scriptarray\scriptarray.cpp" />
-    <ClCompile Include="lib\windows\angelscript\add_on\scriptbuilder\scriptbuilder.cpp" />
-    <ClCompile Include="lib\windows\angelscript\add_on\scripthelper\scripthelper.cpp" />
-    <ClCompile Include="lib\windows\angelscript\add_on\scriptstdstring\scriptstdstring.cpp" />
-    <ClCompile Include="lib\windows\angelscript\add_on\scriptstdstring\scriptstdstring_utils.cpp" />
     <ClCompile Include="lib\windows\gl3w.cpp" />
-    <ClCompile Include="lib\windows\imgui\imgui.cpp" />
-    <ClCompile Include="lib\windows\imgui\imgui_draw.cpp" />
-    <ClCompile Include="lib\windows\imgui\imgui_impl.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\sgl_camera.cpp" />
     <ClCompile Include="src\sgl_framebuffer.cpp" />

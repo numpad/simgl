@@ -10,7 +10,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stb_image.h>
-#include <imgui/imgui.h>
 
 #include "sgl_window.hpp"
 #include "sgl_window_context.hpp"
@@ -125,40 +124,12 @@ struct CameraPath {
 
 void controller_window(sgl::joystick &controller)
 {
-	ImGui::Begin("Controller");
-		ImGui::Columns(2);
-		ImGui::Text("Axes:");
-		for (int i = 0; i < controller.get_axes_count(); ++i) {
-			float v = controller.get_axis(i);
-			ImGui::TextColored(ImVec4(1.0 - (v * 0.5 + 0.5), 0.0, v * 0.5 + 0.5, 1.0), "%d: %g\n", i, v);
-		}
-		ImGui::NextColumn();
-		ImGui::Text("Buttons:");
-		for (int i = 0; i < controller.get_button_count(); ++i) {
-			ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), "%d: %d\n", i, controller.get_button(i));
-		}
-	ImGui::End();
+	
 }
 
 void render_window(sgl::window &window, sgl::shader &world_shader, float *render_dist)
 {
-	ImGui::Begin("Render Settings");
-		static bool _wireframe_enabled = false;
-		static bool _render_depthbuffer = false;
-		
-		if (ImGui::SliderFloat("Render Distance", render_dist, 1.0f, 1000.0f)) {
-			world_shader["z_far"] = *render_dist;
-		}
-		
-		ImGui::Separator();
-		
-		if (ImGui::Checkbox("Wireframe", &_wireframe_enabled)) {
-			window.render_wireframe(_wireframe_enabled);
-		}
-		if (ImGui::Checkbox("Depthbuffer", &_render_depthbuffer)) {
-			world_shader["render_depthbuffer"] = _render_depthbuffer;
-		}
-	ImGui::End();
+	
 }
 
 void new_asteroid(std::vector<glm::mat4> &asteroid_models, std::vector<glm::vec3> &asteroid_colors)
@@ -283,9 +254,6 @@ int __main(int argc, char *argv[]) {
 	glEnable(GL_CULL_FACE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	ImGui::StyleColorsLight();
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	
 	CameraPath cam_path(camera);
 	
 	window.on_update([&](sgl::window &) {
@@ -293,92 +261,7 @@ int __main(int argc, char *argv[]) {
 		static float render_distance = 10000.0f;
 		controller_window(controller);
 		render_window(window, world_shader, &render_distance);
-		
-		ImGui::Begin("Camera");
-			float rot[] = {camera.get_yaw(), camera.get_pitch()};
-			static float camera_move_speed = 1.0f;
-			
-			ImGui::DragFloat3("Position", &camera.pos[0], 0.2f);
-			if (ImGui::DragFloat2("Rotation", rot, 0.5f)) {
-				rot[0] = fmodf(rot[0], 360.0f);
-				rot[1] = fmodf(rot[1], 360.0f);
-				camera.set_rotation(rot[0], rot[1]);
-			}
-			ImGui::SliderFloat("Speed", &camera_move_speed, 0.1f, 100.0f);
-			
-			static bool recording = false;
-			
-			if (ImGui::Button("Add Node")) {
-				cam_path.add(CameraNode(camera));
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Follow Path")) {
-				cam_path.goto_start();
-				cam_path.start();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Go to end")) {
-				CameraNode &end = cam_path.nodes.back();
-				camera.pos = end.pos;
-				camera.set_rotation(end.rotation[0], end.rotation[1]);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Clear")) {
-				cam_path.nodes.clear();
-			}
-			ImGui::SameLine();
-			if (ImGui::Checkbox("Record camera", &recording)) {
-				if (cam_path.nodes.size() == 0)
-					cam_path.add(CameraNode(camera));
-			}
-			
-			ImGui::Separator();
-			
-			ImGui::Text("Path Nodes:");
-			ImGui::BeginChild("Path", ImVec2(0.0f, -20.0f));
-				ImGui::Columns(2);
-				for (size_t i = 0; i < cam_path.nodes.size(); ++i) {
-					glm::vec3 p = cam_path.nodes.at(i).pos;
-					float *r = cam_path.nodes.at(i).rotation;
-					
-					ImGui::Text("#%d at (%g, %g, %g), (%g, %g)", (int)i, p.x, p.y, p.z, r[0], r[1]);
-					ImGui::SameLine();
-					ImGui::PushID(i);
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.9f, 0.2f, 0.25f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.35f, 0.35f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
-					if (ImGui::SmallButton("X")) {
-						cam_path.nodes.erase(cam_path.nodes.begin() + i);
-						cam_path.calculate_length();
-					}
-					ImGui::PopStyleColor(3);
-					ImGui::PopStyleVar();
-					ImGui::PopID();
-					
-					ImGui::NextColumn();
-					
-					float d = cam_path.distance(i);
-					float pd = d / cam_path.total_length;
-					if (d >= 0.0f)
-						ImGui::Text("%g (%.2f%%)", d, pd * 100.0f);
-					
-					ImGui::NextColumn();
-				}
-			static float cam_speed = 2.0f;
-			ImGui::EndChild();
-			ImGui::Text("Path Length: %g", cam_path.total_length);
-			ImGui::SameLine();
-			ImGui::SliderFloat("Speed", &cam_speed, 0.001f, 25.0f);
-			
-		ImGui::End();
 
-		if (recording) {
-			if (glm::distance(cam_path.nodes.back().pos, camera.pos) >= cam_speed)
-				cam_path.add(CameraNode(camera));
-		}
-		
-		cam_path.follow(camera, cam_speed);
 		
 		for (glm::mat4 &mm : asteroid_models) {
 			mm = glm::rotate(mm, glm::radians(0.25f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -391,7 +274,7 @@ int __main(int argc, char *argv[]) {
 			new_asteroid(asteroid_models, asteroid_colors);
 		float c_l2 = (controller.get_axis(2) * 0.5 + 0.5) * -1.0f;
 		float c_r2 = (controller.get_axis(5) * 0.5 + 0.5) *  1.0f;
-		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f), camera_move_speed);
+		camera.move(glm::vec3(controller.get_axis(0), c_l2 + c_r2, controller.get_axis(1) * -1.0f));
 		camera.rotate(controller.get_axis(3) * 1.25f, controller.get_axis(4) * -1.0f, 1.75f);
 		projection = glm::perspective(glm::radians(45.0f), (float)window.width / (float)window.height, 0.1f, render_distance);
 		MVP = projection * camera.get_view() * model;
