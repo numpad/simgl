@@ -17,29 +17,7 @@
 #include "sgl_input.hpp"
 #include "sgl_framebuffer.hpp"
 
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#define NK_IMPLEMENTATION
-#define NK_GLFW_GL3_IMPLEMENTATION
 #include <nuklear/nuklear.h>
-#include <nuklear/nuklear_impl.h>
-
-#define CONCATE_(X,Y) X##Y
-#define CONCATE(X,Y) CONCATE_(X,Y)
-#define UNIQUE(NAME) CONCATE(NAME, __LINE__)
-
-struct Static_ 
-{
-	template<typename T> Static_ (T only_once) { only_once(); }
-	~Static_ () {}  // to counter "warning: unused variable"
-};
-// `UNIQUE` macro required if we expect multiple `static` blocks in function
-#define STATIC static Static_ UNIQUE(block) = [&]() -> void
 
 class Cube {
 
@@ -352,18 +330,9 @@ int main(int argc, char *argv[]) {
 	sgl::framebuffer flag_buffer(512, 512);
 	Cube c;
 
-	struct nk_context *ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
-	struct nk_colorf bg;
-	struct nk_font_atlas *atlas;
-	nk_glfw3_font_stash_begin(&atlas);
-	nk_glfw3_font_stash_end();
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
-	window.on_update([&](sgl::window &) {
-		nk_glfw3_new_frame();
-
-		/* imgui */
+	window.on_update([&](sgl::window &, nk_context *ctx) {
 		static float uWaveHeight  = 0.025f,
 		             uWaveMult    = 2.25f,
 					 uTimeMult    = 1.5f;
@@ -443,7 +412,7 @@ int main(int argc, char *argv[]) {
 
 		glEnable(GL_DEPTH_TEST);
 		flag_buffer.bind();
-		glClearColor(1.0f, 1.0f, 0.9f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		c.render();
 		flag_buffer.unbind();
@@ -455,10 +424,7 @@ int main(int argc, char *argv[]) {
 		flag_buffer.bind_texture(0);
 		water_mesh.render_indexed();
 		
-		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 	});
-
-	nk_glfw3_shutdown();
 
 	return 0;
 }
