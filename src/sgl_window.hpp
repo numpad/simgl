@@ -2,12 +2,16 @@
 #define SGL_WINDOW_HPP
 
 #include <stdio.h>
+#include <cstring>
 #include <string>
 
 #include <functional>
 
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
+
+#include <nuklear/nuklear.h>
+#include <nuklear/nuklear_impl.h>
 
 #include "sgl_window_context.hpp"
 #include "sgl_input.hpp"
@@ -26,7 +30,8 @@ namespace sgl {
 		typedef std::function<void (sgl::window &, bool)>				focus_callback;
 		typedef std::function<void (sgl::window &, unsigned int)>		character_callback;
 		typedef std::function<void (sgl::window &, int, int, int, int)>	key_callback;
-		typedef std::function<void (sgl::window &)>						update_callback;
+		typedef std::function<void (sgl::window &)>						update_callback_nogui;
+		typedef std::function<void (sgl::window &, nk_context *)>		update_callback;
 		typedef std::function<void (sgl::window &)>						close_callback;
 	private:
 		
@@ -44,7 +49,10 @@ namespace sgl {
 		static void window_key_input_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void window_close_callback(GLFWwindow *window);
 		
-		
+		/* nuklear */
+		struct nk_context *nk_ctx;
+		struct nk_font_atlas *nk_fontatlas;
+
 		GLFWwindow *glfw_window;
 		int _width, _height; /* read-write values */
 		bool _focused;
@@ -211,7 +219,7 @@ namespace sgl {
 		/**
 		 * @brief Register an update function.
 		 * 
-		 * This will enter the @em game @em loop, which usually combines handling input,
+		 * This will enter the game loop, which usually combines handling input,
 		 * updating values and rendering to the window. Change the framerate of the
 		 * sgl::window to control in which interval this function is called.
 		 *
@@ -233,10 +241,17 @@ namespace sgl {
 		 * As shown, sgl::window#on_update() implicitly handles most of the work,
 		 * such as polling for input, timing and presenting the framebuffer.
 		 * 
+		 * sgl::window::on_update() provides two overloaded functions, with and
+		 * without the second parameter @em nk_context* @em. 
+		 *
 		 * @warning This function blocks the current process until the window is closed.
 		 */
 		void on_update(sgl::window::update_callback update_func);
 		/** @} */
+		
+
+		/** @copydoc sgl::window::on_update(sgl::window::update_callback update_func) */
+		void on_update(sgl::window::update_callback_nogui update_func);
 	};
 	
 }

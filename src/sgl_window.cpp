@@ -102,6 +102,11 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	
 	/* initialize input */
 	sgl::input::attach(this->glfw_window);
+	
+	/* initialize nuklear */
+	this->nk_ctx = nk_glfw3_init(this->glfw_window, NK_GLFW3_INSTALL_CALLBACKS);
+	nk_glfw3_font_stash_begin(&this->nk_fontatlas);
+	nk_glfw3_font_stash_end();
 
 	return true;
 }
@@ -118,6 +123,7 @@ sgl::window::window(sgl::window_context wctx)
 /* free resources */
 sgl::window::~window()
 {
+	nk_glfw3_shutdown();
 	/* close window */
 	glfwTerminate();
 }
@@ -190,7 +196,7 @@ void sgl::window::on_close(sgl::window::close_callback close_callback)
 	glfwSetWindowCloseCallback(this->glfw_window, this->window_close_callback);
 }
 
-void sgl::window::on_update(std::function<void (sgl::window &)> update_func)
+void sgl::window::on_update(sgl::window::update_callback update_func)
 {
 	/* measure fps */
 	double last_time = glfwGetTime();
@@ -215,12 +221,21 @@ void sgl::window::on_update(std::function<void (sgl::window &)> update_func)
 		
 		
 		glfwPollEvents();
+		nk_glfw3_new_frame();
+
+		update_func(*this, this->nk_ctx);
 		
-		update_func(*this);
-		
+		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 		glfwSwapBuffers(this->glfw_window);
 	}
 	
+}
+
+void sgl::window::on_update(sgl::window::update_callback_nogui update_func)
+{
+	sgl::window::on_update([&](sgl::window &win, nk_context *nctx) {
+		update_func(win);
+	});
 }
 
 void sgl::window::render_wireframe(bool wf_enabled)
