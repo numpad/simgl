@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-std=c++14 -Wall -pedantic -ggdb -fno-strict-aliasing
+CFLAGS=-std=c++14 -Wall -pedantic -ggdb
 INCLUDES=-I lib/linux/
 LFLAGS=
 LIBS=-lGL -lglfw -ldl -lpthread
