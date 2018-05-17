@@ -124,6 +124,7 @@
     <ClInclude Include="src\sgl_timer.hpp" />
     <ClInclude Include="src\sgl_window.hpp" />
     <ClInclude Include="src\sgl_window_context.hpp" />
+    <ClInclude Include="src\simgl.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\frag.glsl" />

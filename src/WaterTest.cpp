@@ -11,13 +11,7 @@
 
 #include <nuklear/nuklear.h>
 
-#include "sgl_window.hpp"
-#include "sgl_camera.hpp"
-#include "sgl_texture.hpp"
-#include "sgl_mesh.hpp"
-#include "sgl_shader.hpp"
-#include "sgl_input.hpp"
-#include "sgl_framebuffer.hpp"
+#include "simgl.hpp"
 
 
 class Cube {
