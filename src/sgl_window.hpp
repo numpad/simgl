@@ -2,7 +2,7 @@
 #define SGL_WINDOW_HPP
 
 #include <stdio.h>
-#include <cstring>
+#include <string.h>
 #include <string>
 
 #include <functional>

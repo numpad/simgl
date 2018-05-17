@@ -9,6 +9,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <nuklear/nuklear.h>
+
 #include "sgl_window.hpp"
 #include "sgl_camera.hpp"
 #include "sgl_texture.hpp"
@@ -17,7 +19,6 @@
 #include "sgl_input.hpp"
 #include "sgl_framebuffer.hpp"
 
-#include <nuklear/nuklear.h>
 
 class Cube {
 

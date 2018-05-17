@@ -137,7 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\windows\gl3w.cpp" />
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="lib\windows\nuklear\nuklear.cpp" />
     <ClCompile Include="src\sgl_camera.cpp" />
     <ClCompile Include="src\sgl_framebuffer.cpp" />
     <ClCompile Include="src\sgl_input.cpp" />
