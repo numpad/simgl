@@ -393,7 +393,7 @@ int main(int argc, char *argv[]) {
 		/* update */
 		aspect = (float)window.width / (float)window.height;
 		mProj = glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, -20.0f, 20.0f);
-		//glm::mat4 mProj = glm::perspective(window.width / (float)window.height, glm::radians(45.0f), 0.1f, 100.0f);
+		//mProj = glm::perspective(window.width / (float)window.height, glm::radians(45.0f), 0.1f, 100.0f);
 		
 
 		/* water */
@@ -411,12 +411,17 @@ int main(int argc, char *argv[]) {
 		water_shader["uFoamRange"] = glm::vec2(uFoamRange[0], uFoamRange[1]);
 
 		glEnable(GL_DEPTH_TEST);
+		
+		/* render to framebuffer */
 		flag_buffer.bind();
+		
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		c.render();
+		
 		flag_buffer.unbind();
 		
+		/* render to window */
 		glClearColor(0.6f, 0.3f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
