@@ -60,6 +60,18 @@ bool sgl::shader::load_from_memory(std::string ssrc, sgl::shader::type type)
 
 bool sgl::shader::compile(sgl::shader::type type)
 {
+	/* special case WILDCARD: compile all loaded shaders, return true only if all compiled correctly! */
+	if (type == sgl::shader::WILDCARD) {
+		for (int i = 0; i < sgl::shader::MAX_TYPES; ++i) {
+			if (this->stage_of_type[i] == sgl::shader::STAGE_LOADED) {
+				bool ok = this->compile((sgl::shader::type)i);
+				if (!ok) return false;
+			}
+		}
+
+		return true;
+	}
+
 	if (this->stage_of_type[type] != sgl::shader::STAGE_LOADED) {
 		std::cout << "Cannot compile " << sgl::shader::type_to_name[type] << " shader. Is it loaded?" << std::endl;
 		return false;

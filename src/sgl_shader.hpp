@@ -71,7 +71,9 @@ namespace sgl {
 			VERTEX,		/**< Operate on the vertex shader. */
 			FRAGMENT,	/**< Operate on the fragment shader. */
 			GEOMETRY,	/**< Operate on the geometry shader. */
-			MAX_TYPES	/**< Use this to iterate over every shader type.  */
+			MAX_TYPES,	/**< Use this to iterate over every shader type.  */
+			/* special values */
+			WILDCARD	/**< Wildcard, operate on all shaders that are usable. */
 		};
 		
 	private:
@@ -304,7 +306,7 @@ namespace sgl {
 		bool load_from_memory(std::string ssrc, sgl::shader::type type);
 
 		/**
-		 * @brief Compiles a previously loaded shader of sgl::shader#type @em type.
+		 * @brief Compiles one (or all, by default) previously loaded shaders of sgl::shader#type @em type.
 		 * 
 		 * Compile previously loaded shader, needs to be linked afterwards.
 		 * Errors during compilation will be printed to std::cout. 
@@ -318,7 +320,7 @@ namespace sgl {
 		 * @see sgl::shader#load_from_memory()
 		 * @see sgl::shader#link()
 		 */
-		bool compile(sgl::shader::type type);
+		bool compile(sgl::shader::type type = sgl::shader::WILDCARD);
 		
 		/**
 		 * @brief Links previously loaded shaders to a shader program.
