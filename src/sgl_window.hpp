@@ -13,6 +13,9 @@
 #include <nuklear/nuklear.h>
 #include <nuklear/nuklear_impl.h>
 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl.h>
+
 #include "sgl_window_context.hpp"
 #include "sgl_input.hpp"
 

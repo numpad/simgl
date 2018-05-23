@@ -108,6 +108,13 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	nk_glfw3_font_stash_begin(&this->nk_fontatlas);
 	nk_glfw3_font_stash_end();
 
+	/* initialize imgui */
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
+	ImGui::StyleColorsLight();
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+
 	return true;
 }
 
@@ -124,6 +131,10 @@ sgl::window::window(sgl::window_context wctx)
 sgl::window::~window()
 {
 	nk_glfw3_shutdown();
+	
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
+	
 	/* close window */
 	glfwTerminate();
 }
@@ -222,10 +233,13 @@ void sgl::window::on_update(sgl::window::update_callback update_func)
 		
 		glfwPollEvents();
 		nk_glfw3_new_frame();
+		ImGui_ImplGlfwGL3_NewFrame();
 
 		update_func(*this, this->nk_ctx);
 		
 		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
+		ImGui::Render();
+		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(this->glfw_window);
 	}
 	
