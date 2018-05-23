@@ -12,7 +12,7 @@ sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
 	
 	/* create texture */
 	glBindTexture(GL_TEXTURE_2D, this->texture_color_att);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -32,6 +32,12 @@ sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
 
 	this->unbind();
 
+}
+
+sgl::framebuffer::framebuffer(sgl::window &window)
+	: sgl::framebuffer::framebuffer(window.width, window.height)
+{
+	
 }
 
 sgl::framebuffer::operator GLuint() const {
