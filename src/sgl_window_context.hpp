@@ -170,6 +170,15 @@ namespace sgl {
 		 *         false otherwise.
 		 */
 		bool set_version(int major, int minor);
+		
+		/**
+		 * @brief Enable/Disable dear imgui integration.
+		 */
+		bool dear_imgui = false;
+		/**
+		 * @brief Enable/Disable nuklear integration.
+		 */
+		bool nuklear = false;
 	};
 
 }

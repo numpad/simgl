@@ -104,23 +104,27 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	sgl::input::attach(this->glfw_window);
 	
 	/* initialize nuklear */
-	this->nk_ctx = nk_glfw3_init(this->glfw_window, NK_GLFW3_INSTALL_CALLBACKS);
-	nk_glfw3_font_stash_begin(&this->nk_fontatlas);
-	nk_glfw3_font_stash_end();
+	if (wctx.nuklear) {
+		this->nk_ctx = nk_glfw3_init(this->glfw_window, NK_GLFW3_INSTALL_CALLBACKS);
+		nk_glfw3_font_stash_begin(&this->nk_fontatlas);
+		nk_glfw3_font_stash_end();
+	}
 
 	/* initialize imgui */
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
-	ImGui::StyleColorsLight();
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	if (wctx.dear_imgui) {
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
+		ImGui::StyleColorsLight();
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	}
 
 	return true;
 }
 
 
 sgl::window::window(sgl::window_context wctx)
-	: _width(wctx.width), _height(wctx.height),
+	: _width(wctx.width), _height(wctx.height), window_ctx(wctx),
 	width(_width), height(_height),
 	focused(_focused)
 {
@@ -129,12 +133,16 @@ sgl::window::window(sgl::window_context wctx)
 
 /* free resources */
 sgl::window::~window()
-{
-	nk_glfw3_shutdown();
-	
-	ImGui_ImplGlfwGL3_Shutdown();
-	ImGui::DestroyContext();
-	
+{	
+	if (this->window_ctx.nuklear) {
+		nk_glfw3_shutdown();
+	}
+
+	if (this->window_ctx.dear_imgui) {
+		ImGui_ImplGlfwGL3_Shutdown();
+		ImGui::DestroyContext();
+	}
+
 	/* close window */
 	glfwTerminate();
 }
@@ -232,14 +240,28 @@ void sgl::window::on_update(sgl::window::update_callback update_func)
 		
 		
 		glfwPollEvents();
-		nk_glfw3_new_frame();
-		ImGui_ImplGlfwGL3_NewFrame();
+		/* 
+		 * call imgui/nuklear wrappers for newframe, may also call
+		 * a do-nothing function if the library was not initialized
+		 * in the window_context
+		 */
+		if (this->window_ctx.dear_imgui)
+			ImGui_ImplGlfwGL3_NewFrame();
+		if (this->window_ctx.nuklear)
+			nk_glfw3_new_frame();
 
 		update_func(*this, this->nk_ctx);
 		
-		nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
-		ImGui::Render();
-		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (this->window_ctx.nuklear) {
+			nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
+		}
+
+		if (this->window_ctx.dear_imgui) {
+			ImGui::Render();
+			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+		}
+
 		glfwSwapBuffers(this->glfw_window);
 	}
 	

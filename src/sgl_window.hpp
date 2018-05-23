@@ -60,6 +60,8 @@ namespace sgl {
 		int _width, _height; /* read-write values */
 		bool _focused;
 		
+		sgl::window_context &window_ctx;
+
 		std::string _title;
 
 		/* ms per frame */
