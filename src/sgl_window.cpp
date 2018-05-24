@@ -101,6 +101,11 @@ bool sgl::window::init_context()
 		return false;
 	}
 	
+	/* default opengl config */
+	if (this->window_ctx.samples != GLFW_DONT_CARE) {
+		glEnable(GL_MULTISAMPLE);
+	}
+
 	/* initialize input */
 	sgl::input::attach(this->glfw_window);
 	
