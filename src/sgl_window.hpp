@@ -60,7 +60,7 @@ namespace sgl {
 		int _width, _height; /* read-write values */
 		bool _focused;
 		
-		sgl::window_context &window_ctx;
+		sgl::window_context window_ctx;
 
 		std::string _title;
 
@@ -69,7 +69,7 @@ namespace sgl {
 		double _ms_per_frame;
 
 		/* initializer methods */
-		bool init_context(sgl::window_context &wctx);
+		bool init_context();
 
 	public:
 		/* 

@@ -36,52 +36,53 @@ void sgl::window::window_close_callback(GLFWwindow *window)
 		curr_win->on_closed(*curr_win);
 }
 
-bool sgl::window::init_context(sgl::window_context &wctx)
+bool sgl::window::init_context()
 {
+	printf("wctx.nuklear = %s\n", this->window_ctx.nuklear ? "true" : "false");
 	/* initialize glfw, check for errors */
 	if (!glfwInit()) {
 		return false;
 	}
 	
 	/* apply default window hints */
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, wctx.gl_major);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, wctx.gl_minor);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->window_ctx.gl_major);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->window_ctx.gl_minor);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); /* use core opengl without extensions */
-	glfwWindowHint(GLFW_RESIZABLE, wctx.resizable);
-	glfwWindowHint(GLFW_VISIBLE, wctx.visible);
-	glfwWindowHint(GLFW_DECORATED, wctx.decorated);
-	glfwWindowHint(GLFW_FOCUSED, wctx.focused);
-	glfwWindowHint(GLFW_DOUBLEBUFFER, wctx.double_buffer);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, wctx.forward_compat);
-	glfwWindowHint(GLFW_SAMPLES, wctx.samples);
+	glfwWindowHint(GLFW_RESIZABLE, this->window_ctx.resizable);
+	glfwWindowHint(GLFW_VISIBLE, this->window_ctx.visible);
+	glfwWindowHint(GLFW_DECORATED, this->window_ctx.decorated);
+	glfwWindowHint(GLFW_FOCUSED, this->window_ctx.focused);
+	glfwWindowHint(GLFW_DOUBLEBUFFER, this->window_ctx.double_buffer);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, this->window_ctx.forward_compat);
+	glfwWindowHint(GLFW_SAMPLES, this->window_ctx.samples);
 
 	/* use primary monitor for fullscreen */
-	GLFWmonitor *monitor = (wctx.fullscreen ? glfwGetPrimaryMonitor() : NULL);
+	GLFWmonitor *monitor = (this->window_ctx.fullscreen ? glfwGetPrimaryMonitor() : NULL);
 	
 	int set_width = sgl::window_context::DEFAULT_WIDTH;
 	int set_height = sgl::window_context::DEFAULT_HEIGHT;
 	
-	if (wctx.fullscreen && monitor) {
+	if (this->window_ctx.fullscreen && monitor) {
 		const GLFWvidmode *vidmode = glfwGetVideoMode(monitor);
 		set_width = vidmode->width;
 		set_height = vidmode->height;
 	}
 
-	if (wctx.width == GLFW_DONT_CARE)
-		wctx.width = set_width;
+	if (this->window_ctx.width == GLFW_DONT_CARE)
+		this->window_ctx.width = set_width;
 
-	if (wctx.height == GLFW_DONT_CARE)
-		wctx.height = set_height;
+	if (this->window_ctx.height == GLFW_DONT_CARE)
+		this->window_ctx.height = set_height;
 	
-	this->_title = wctx.title;
-	this->glfw_window = glfwCreateWindow(wctx.width, wctx.height, wctx.title.c_str(), monitor, NULL);
+	this->_title = this->window_ctx.title;
+	this->glfw_window = glfwCreateWindow(this->window_ctx.width, this->window_ctx.height, this->window_ctx.title.c_str(), monitor, NULL);
 	if (!this->glfw_window) {
 		return false;
 	}
 	glfwGetWindowSize(this->glfw_window, &this->_width, &this->_height);
 	
 	glfwMakeContextCurrent(this->glfw_window);
-	glfwSwapInterval(wctx.swap_interval);
+	glfwSwapInterval(this->window_ctx.swap_interval);
 	
 	/* register callbacks */
 	glfwSetFramebufferSizeCallback(this->glfw_window, this->window_fb_resize_callback);
@@ -89,14 +90,14 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	/* set userpointer to glfw window */
 	glfwSetWindowUserPointer(this->glfw_window, (void *)this);
 	
-	glfwSetWindowSizeLimits(this->glfw_window, wctx.min_width, wctx.min_height, wctx.max_width, wctx.max_height);
+	glfwSetWindowSizeLimits(this->glfw_window, this->window_ctx.min_width, this->window_ctx.min_height, this->window_ctx.max_width, this->window_ctx.max_height);
 
 	/* init gl3w */
 	if (gl3wInit()) {
 		return false;
 	}
 	
-	if (!gl3wIsSupported(wctx.gl_major, wctx.gl_minor)) {
+	if (!gl3wIsSupported(this->window_ctx.gl_major, this->window_ctx.gl_minor)) {
 		return false;
 	}
 	
@@ -104,14 +105,14 @@ bool sgl::window::init_context(sgl::window_context &wctx)
 	sgl::input::attach(this->glfw_window);
 	
 	/* initialize nuklear */
-	if (wctx.nuklear) {
+	if (this->window_ctx.nuklear) {
 		this->nk_ctx = nk_glfw3_init(this->glfw_window, NK_GLFW3_INSTALL_CALLBACKS);
 		nk_glfw3_font_stash_begin(&this->nk_fontatlas);
 		nk_glfw3_font_stash_end();
 	}
 
 	/* initialize imgui */
-	if (wctx.dear_imgui) {
+	if (this->window_ctx.dear_imgui) {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGui_ImplGlfwGL3_Init(this->glfw_window, true);
@@ -128,7 +129,7 @@ sgl::window::window(sgl::window_context wctx)
 	width(_width), height(_height),
 	focused(_focused)
 {
-	this->init_context(wctx);
+	this->init_context();
 }
 
 /* free resources */
@@ -245,10 +246,13 @@ void sgl::window::on_update(sgl::window::update_callback update_func)
 		 * a do-nothing function if the library was not initialized
 		 * in the window_context
 		 */
-		if (this->window_ctx.dear_imgui)
+		if (this->window_ctx.dear_imgui) {
 			ImGui_ImplGlfwGL3_NewFrame();
-		if (this->window_ctx.nuklear)
+		}
+		if (this->window_ctx.nuklear) {
+			printf("wctx.nuklear = %s\n", this->window_ctx.nuklear ? "true" : "false");
 			nk_glfw3_new_frame();
+		}
 
 		update_func(*this, this->nk_ctx);
 		
