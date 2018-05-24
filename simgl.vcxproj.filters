@@ -119,10 +119,19 @@
     <ClCompile Include="src\sgl_input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\WaterTest.cpp">
+    <ClCompile Include="lib\windows\nuklear\nuklear.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\windows\nuklear\nuklear.cpp">
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\windows\imgui\imgui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\windows\imgui\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\windows\imgui\imgui_impl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -138,7 +138,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\windows\gl3w.cpp" />
+    <ClCompile Include="lib\windows\imgui\imgui.cpp" />
+    <ClCompile Include="lib\windows\imgui\imgui_draw.cpp" />
+    <ClCompile Include="lib\windows\imgui\imgui_impl.cpp" />
     <ClCompile Include="lib\windows\nuklear\nuklear.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\sgl_camera.cpp" />
     <ClCompile Include="src\sgl_framebuffer.cpp" />
     <ClCompile Include="src\sgl_input.cpp" />
@@ -151,7 +155,6 @@
     <ClCompile Include="src\sgl_timer.cpp" />
     <ClCompile Include="src\sgl_window.cpp" />
     <ClCompile Include="src\sgl_window_context.cpp" />
-    <ClCompile Include="src\WaterTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
