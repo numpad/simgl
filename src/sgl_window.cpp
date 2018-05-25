@@ -38,7 +38,6 @@ void sgl::window::window_close_callback(GLFWwindow *window)
 
 bool sgl::window::init_context()
 {
-	printf("wctx.nuklear = %s\n", this->window_ctx.nuklear ? "true" : "false");
 	/* initialize glfw, check for errors */
 	if (!glfwInit()) {
 		return false;
@@ -186,6 +185,11 @@ void sgl::window::capture_cursor(bool capture_enabled)
 	glfwSetInputMode(this->glfw_window, GLFW_CURSOR, (capture_enabled ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL));
 }
 
+float sgl::window::aspect()
+{
+	return (float)this->width / (float)this->height;
+}
+
 void sgl::window::close(bool close_window)
 {
 	glfwSetWindowShouldClose(this->glfw_window, (close_window ? GLFW_TRUE : GLFW_FALSE));
@@ -255,7 +259,6 @@ void sgl::window::on_update(sgl::window::update_callback update_func)
 			ImGui_ImplGlfwGL3_NewFrame();
 		}
 		if (this->window_ctx.nuklear) {
-			printf("wctx.nuklear = %s\n", this->window_ctx.nuklear ? "true" : "false");
 			nk_glfw3_new_frame();
 		}
 
@@ -278,7 +281,7 @@ void sgl::window::on_update(sgl::window::update_callback update_func)
 
 void sgl::window::on_update(sgl::window::update_callback_nogui update_func)
 {
-	sgl::window::on_update([&](sgl::window &win, nk_context *nctx) {
+	this->on_update([&](sgl::window &win, nk_context *nctx) {
 		update_func(win);
 	});
 }

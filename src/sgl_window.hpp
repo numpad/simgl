@@ -125,7 +125,14 @@ namespace sgl {
 		 *
 		 * @param capture_enabled Set the capture state.
 		 */
-		 void capture_cursor(bool capture_enabled = true);
+		void capture_cursor(bool capture_enabled = true);
+
+		/**
+		 * @brief Calculate the windows aspect ratio.
+		 * 
+		 * @return The windows aspect ratio.
+		 */
+		float aspect();
 
 		/**
 		 * @brief Enable/Disable wireframe.
