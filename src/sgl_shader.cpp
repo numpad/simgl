@@ -45,7 +45,7 @@ bool sgl::shader::load(std::string fname, sgl::shader::type type)
 
 bool sgl::shader::load_from_memory(std::string ssrc, sgl::shader::type type)
 {
-	if (ssrc.size() == 0)
+	if (ssrc.size() == 0 || type == sgl::shader::WILDCARD)
 		return false;
 	
 	const size_t src_len = ssrc.size();
