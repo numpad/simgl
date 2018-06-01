@@ -8,7 +8,8 @@ sgl::mesh::mesh(std::vector<GLuint> layout)
 	this->vertex_layout = layout;
 }
 
-sgl::mesh::mesh(std::string obj_path, std::vector<GLuint> layout) : mesh(layout)
+sgl::mesh::mesh(std::string obj_path, std::vector<GLuint> layout)
+	: mesh(layout)
 {
 	this->load(obj_path);
 }
