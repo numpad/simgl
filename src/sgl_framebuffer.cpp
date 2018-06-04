@@ -1,6 +1,40 @@
 #include "sgl_framebuffer.hpp"
 
-sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
+sgl::framebuffer::framebuffer(std::string filename)
+{
+	/* TODO: merge with sgl::texture::load into one static, public method void *sgl::texture::load_pixels(&width, &height); */
+	/* load texture data */
+	stbi_set_flip_vertically_on_load(1);
+	int channels_in_file;
+	int w, h;
+	GLubyte *tex_data = stbi_load(filename.c_str(), &w, &h, &channels_in_file, 0);
+	constexpr GLuint gl_channels[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+	
+	this->width = (GLuint)w;
+	this->height = (GLuint)h;
+
+	GLuint channels = gl_channels[channels_in_file - 1];
+
+	/* upload texture data to gpu */
+	this->load(this->width, this->height, tex_data, channels, channels, GL_UNSIGNED_BYTE);
+	
+	/* free resources */
+	stbi_image_free(tex_data);
+}
+
+sgl::framebuffer::framebuffer(GLuint width, GLuint height)
+{
+	this->load(width, height, NULL);
+}
+
+sgl::framebuffer::framebuffer(sgl::window &window)
+	: sgl::framebuffer::framebuffer(window.width, window.height)
+{
+	
+}
+
+void sgl::framebuffer::load(GLuint width, GLuint height, void *pixels, GLuint channels_src, GLuint channels_dst, GLuint type)
+{
 	glGenFramebuffers(1, &this->fbo);
 	glGenTextures(1, &this->texture_color_att);
 	glGenRenderbuffers(1, &this->rbo);
@@ -12,7 +46,7 @@ sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
 	
 	/* create texture */
 	glBindTexture(GL_TEXTURE_2D, this->texture_color_att);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, channels_dst, width, height, 0, channels_src, type, pixels);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -34,12 +68,6 @@ sgl::framebuffer::framebuffer(GLuint width, GLuint height) {
 
 }
 
-sgl::framebuffer::framebuffer(sgl::window &window)
-	: sgl::framebuffer::framebuffer(window.width, window.height)
-{
-	
-}
-
 sgl::framebuffer::operator GLuint() const {
 	return this->texture_color_att;
 }
@@ -58,6 +86,11 @@ void sgl::framebuffer::bind_texture(GLuint index)
 {
 	glActiveTexture(GL_TEXTURE0 + index);
 	glBindTexture(GL_TEXTURE_2D, this->texture_color_att);
+}
+
+void sgl::framebuffer::unbind_texture()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 sgl::framebuffer::~framebuffer() {
