@@ -21,10 +21,14 @@ namespace sgl {
 	public:
 		GLuint width, height;
 		
+		framebuffer();
 		framebuffer(std::string filename);
 		framebuffer(GLuint width, GLuint height);
 		framebuffer(sgl::window &window);
 		~framebuffer();
+		
+		/* more specific loading functions */
+		void load_depthbuffer(GLuint width, GLuint height);
 		
 		/* return color attachment */
 		operator GLuint() const;

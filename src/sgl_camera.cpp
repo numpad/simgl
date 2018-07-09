@@ -7,9 +7,14 @@ sgl::camera::camera(glm::vec3 pos, float yaw, float pitch, bool constrain_pitch,
     this->yaw = yaw;
     this->pitch = pitch;
     this->constrain_pitch = constrain_pitch;
-
+	this->speed = 1.0f;
     this->set_flying(fly_mode);
     this->update_vectors();
+}
+
+void sgl::camera::set_speed(float base_speed)
+{
+	this->speed = base_speed;
 }
 
 float sgl::camera::get_yaw()
@@ -43,6 +48,7 @@ void sgl::camera::set_pos(glm::vec3 pos)
 
 void sgl::camera::move(glm::vec3 dir, float speed)
 {
+	speed *= this->speed;
     this->pos += (glm::normalize(this->front * this->move_plane) * dir.z) * speed
                  + (glm::normalize(this->right) * dir.x) * speed
                  + (glm::normalize(this->world_up) * dir.y) * speed;
@@ -50,6 +56,7 @@ void sgl::camera::move(glm::vec3 dir, float speed)
 
 void sgl::camera::move_worldspace(glm::vec3 dir, float speed)
 {
+	speed *= this->speed;
 	this->pos += dir * speed;
 }
 

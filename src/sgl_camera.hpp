@@ -14,6 +14,8 @@ namespace sgl {
 		float yaw, pitch;
 		
 		bool constrain_pitch;
+		
+		float speed;
 
 		void update_vectors();
 		
@@ -37,6 +39,13 @@ namespace sgl {
 		 */
 		camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), float yaw = 0.0f, float pitch = 0.0f, bool constrain_pitch = true, bool fly_mode = true);
 		
+		/**
+		 * @brief Set the base speed for moving.
+		 * 
+		 * @param base_speed The camera movements base speed.
+		 */
+		void set_speed(float base_speed);
+
 		/**
 		 * @brief Get the rotation around the Y-axis.
 		 * 
