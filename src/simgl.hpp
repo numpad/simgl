@@ -21,4 +21,9 @@
 #include "sgl_modelloader.hpp"
 #include "sgl_timer.hpp"
 
+/* audio */
+#include "sgla_listener.hpp"
+#include "sgla_source.hpp"
+#include "sgla_buffer.hpp"
+
 #endif
