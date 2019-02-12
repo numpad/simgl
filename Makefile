@@ -12,6 +12,7 @@ MAIN=dm3d
 .PHONY: clean
 
 all: $(MAIN)
+	./$(MAIN)
 
 $(MAIN): $(OBJS)
 	$(CC) $(CLAGS) $(INCLUDES) -o $(MAIN) $(OBJS) $(LFLAGS) $(LIBS)

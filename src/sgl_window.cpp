@@ -237,17 +237,18 @@ void sgl::window::on_update(sgl::window::update_callback update_func)
 
 	while (!glfwWindowShouldClose(this->glfw_window)) {
 		/* calculate average fps over x seconds */
+		/*
 		double curr_time = glfwGetTime();
 		nb_frames++;
 		if (curr_time - last_time >= this->_ms_per_frame_update_interval) {
 			this->_ms_per_frame = (1000.0 * this->_ms_per_frame_update_interval) / double(nb_frames);
 			nb_frames = 0;
 			last_time += this->_ms_per_frame_update_interval;
-			/* update window title */
+			// update window title
 			sprintf(win_title, title_format, last_title.c_str(), this->_ms_per_frame);
 			this->set_title(win_title);
 		}
-		
+		*/
 		
 		glfwPollEvents();
 		/* 
